@@ -39,11 +39,29 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('desktop: no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     ok('desktop: Poppins loaded', await page.evaluate(() => document.fonts.check('800 16px Poppins')));
     ok('desktop: nav links visible at 1280', await page.locator('.nav-links a').first().isVisible());
-    // hero team-photo slot + live badge
-    const img = await page.evaluate(() => { const i = document.querySelector('.hero-photo img'); return i && { w: i.naturalWidth, h: i.naturalHeight, complete: i.complete, ratio: +(i.getBoundingClientRect().width / i.getBoundingClientRect().height).toFixed(2) }; });
-    ok('hero: team image slot renders (placeholder decoded)', img && img.complete && img.w > 0, JSON.stringify(img));
-    ok('hero: image slot is 4:5', img && Math.abs(img.ratio - 0.8) < 0.03, `${img && img.ratio}`);
+    // hero team-photo carousel + live badge
+    const slides = await page.$$eval('.slide img', imgs => imgs.map(i => ({ w: i.naturalWidth, h: i.naturalHeight, complete: i.complete, src: i.currentSrc.split('/').pop(), alt: i.alt })));
+    ok('hero: 2 slides, both photos decoded', slides.length === 2 && slides.every(s => s.complete && s.w > 0 && s.alt.length > 20), JSON.stringify(slides));
+    ok('hero: photos are 4:5', slides.every(s => Math.abs(s.w / s.h - 0.8) < 0.01));
+    const ratio = await page.evaluate(() => { const r = document.querySelector('.hero-photo').getBoundingClientRect(); return +(r.width / r.height).toFixed(2); });
+    ok('hero: photo frame is 4:5', Math.abs(ratio - 0.8) < 0.03, `${ratio}`);
     ok('hero: live badge sits inside photo', await page.evaluate(() => { const p = document.querySelector('.hero-photo').getBoundingClientRect(), b = document.querySelector('.hero-badge').getBoundingClientRect(); return b.left >= p.left && b.right <= p.right && b.bottom <= p.bottom; }));
+    ok('hero: caption text', (await page.locator('.hero-cap p').innerText()).trim() === 'Uproot Clean team accepting 1st Place Award at Global Pet 2026 for Pet Tech Innovation');
+    ok('hero: counter starts 1 / 2', (await page.locator('#car-idx').innerText()) === '1 / 2');
+    await page.click('#car-next');
+    await page.waitForFunction(() => { const t = document.getElementById('team-slides'); return Math.abs(t.scrollLeft - t.clientWidth) < 2; }, null, { timeout: 3000 }).catch(() => {});
+    const pos2 = await page.evaluate(() => { const t = document.getElementById('team-slides'); return { left: Math.round(t.scrollLeft), w: t.clientWidth }; });
+    ok('hero: next → slide 2 in view', Math.abs(pos2.left - pos2.w) < 2 && (await page.locator('#car-idx').innerText()) === '2 / 2', JSON.stringify(pos2));
+    await page.click('#car-next');
+    await page.waitForFunction(() => document.getElementById('team-slides').scrollLeft < 2, null, { timeout: 3000 }).catch(() => {});
+    ok('hero: next wraps back to slide 1', (await page.evaluate(() => document.getElementById('team-slides').scrollLeft)) < 2 && (await page.locator('#car-idx').innerText()) === '1 / 2');
+    await page.focus('#team-slides'); await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(() => { const t = document.getElementById('team-slides'); return Math.abs(t.scrollLeft - t.clientWidth) < 2; }, null, { timeout: 3000 }).catch(() => {});
+    ok('hero: arrow key advances', (await page.locator('#car-idx').innerText()) === '2 / 2');
+    await page.click('#car-prev');
+    await page.waitForFunction(() => document.getElementById('team-slides').scrollLeft < 2, null, { timeout: 3000 }).catch(() => {});
+    ok('hero: carousel track does not widen the page', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    ok('hero: webp source offered', (await page.locator('.slide source[type="image/webp"]').count()) === 2);
     // retailer logos
     const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
     ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());
@@ -107,6 +125,13 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const cols = await page.evaluate(() => getComputedStyle(document.querySelector('.hero-grid')).gridTemplateColumns.split(' ').length);
     ok('mobile: hero stacks to 1 column', cols === 1, `${cols}`);
     ok('mobile: nav CTA visible', await page.locator('.nav-inner > .btn').isVisible());
+    ok('mobile: caption + controls visible', await page.locator('.hero-cap p').isVisible() && await page.locator('#car-next').isVisible());
+    await page.evaluate(() => { const t = document.getElementById('team-slides'); t.scrollTo({ left: t.clientWidth, behavior: 'auto' }); });
+    await page.waitForFunction(() => document.getElementById('car-idx').textContent === '2 / 2', null, { timeout: 2000 }).catch(() => {});
+    ok('mobile: swipe (scroll) updates counter', (await page.locator('#car-idx').innerText()) === '2 / 2',
+      await page.evaluate(() => { const t = document.getElementById('team-slides'); return `scrollLeft=${t.scrollLeft} clientWidth=${t.clientWidth} scrollWidth=${t.scrollWidth} idx=${document.getElementById('car-idx').textContent}`; }));
+    await page.evaluate(() => document.getElementById('team-slides').scrollTo({ left: 0, behavior: 'auto' }));
+    await page.waitForTimeout(250);
     await page.screenshot({ path: path.join(OUT, 'mobile-top.png') });
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
     await page.locator('.hero-photo').scrollIntoViewIfNeeded();

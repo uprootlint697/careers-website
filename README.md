@@ -37,21 +37,31 @@ To point at a different board, change `BOARD` at the top of the script.
 
 ## Sections
 
-Hero (team photo + live open-roles badge) · The company · Why join · Benefits · How we hire
+Hero (2-photo carousel + caption + live open-roles badge) · The company · Why join · Benefits · How we hire
 (4 steps, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
 
-## Swapping in the team photo
+## Hero photo carousel
 
-The hero's right column is a `.hero-photo` slot holding a brand-gradient **placeholder** (an inline
-SVG data URI) until the real team image exists. To replace it:
+The hero's right column is a two-photo carousel (`#team-carousel`) of the team accepting the
+1st-place Pet Tech award at Global Pet Expo 2026, with the caption under it and the live
+"Open roles right now" badge overlaid. Photos live in `assets/`:
 
-1. Export the photo as **4:5 portrait, ≥1400 px wide** (1400×1750 is the slot's intrinsic size).
-2. In `index.html`, find the `<!-- Team photo: swap src ... -->` comment and change the `<img>`'s
-   `src` to the image URL. Keep `width="1400" height="1750"` so layout doesn't shift while loading.
-3. Set a real `alt` (e.g. `alt="The Uproot Clean team on a video call"`). It's `alt=""` now because
-   the placeholder is decorative.
+| File | Use |
+|---|---|
+| `team-{1,2}-1400.webp` / `.jpg` | desktop (≥761 px), 1400×1750 |
+| `team-{1,2}-800.webp` / `.jpg` | phones, 800×1000 |
 
-The "Open roles right now" badge overlays the bottom of the photo and keeps working unchanged.
+`<picture>` serves WebP with JPEG fallback; `srcset`/`sizes` pick the width. Every image has a
+descriptive `alt`. The originals (4000×5000) are not in the repo.
+
+How it works: a horizontal `scroll-snap` track, so touch swipe is native. Prev/next buttons and
+←/→ keys (when the track is focused) call `scrollTo`; a `1 / 2` counter follows the scroll
+position. Autoplay advances every 6 s and stops permanently on hover, focus, touch or click, and
+is disabled under `prefers-reduced-motion`. No library.
+
+**To add or replace a photo:** export 4:5 at 1400 and 800 wide (WebP + JPEG), drop into `assets/`,
+copy one `<div class="slide">` block in `index.html` and update the paths and `alt`. The counter
+and controls pick up the new count automatically.
 
 ## Retailer logos
 
@@ -65,6 +75,9 @@ sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.
 
 - **Canonical URL is not set.** Add `<link rel="canonical">` once the final path is known
   (e.g. `https://uprootclean.com/pages/careers` if it lives as a Shopify page, or a subdomain).
+- Photos are referenced as relative `assets/...` paths. If the page is pasted into a Shopify page
+  template rather than deployed as files, upload the eight images to Shopify Files and swap the
+  paths for their CDN URLs.
 - `og:image` reuses the storefront's existing OG image on `uprootclean.com/cdn/...`. Swap for a
   careers-specific image when one exists.
 - If hosted as a Shopify page, the inline `<style>` and `<script>` need to be allowed in the
@@ -91,8 +104,9 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (40): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (50): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
-link, Poppins loaded, no console errors, no horizontal overflow, hero photo slot decodes and is 4:5,
-badge sits inside the photo, 4 labelled retailer logos with no leaked CSS, API-down / API-empty /
-hostile-title paths. Last run 2026-09-17: all green.
+link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
+are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
+doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
+no leaked CSS, API-down / API-empty / hostile-title paths. Last run 2026-09-17: all green.

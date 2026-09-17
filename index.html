@@ -175,22 +175,42 @@
   .meta-row { font-size: .86rem; font-weight: 500; color: var(--muted); margin: 0; }
   .meta-row b { color: var(--uproot-deep); font-weight: 700; }
 
-  /* ---------- Hero: team photo ---------- */
+  /* ---------- Hero: team photo carousel ---------- */
+  .hero-media { margin: 0; display: flex; flex-direction: column; gap: .8rem; width: 100%; max-width: 448px; justify-self: end; }
   .hero-photo {
     position: relative; border-radius: var(--r-block); overflow: hidden;
     border: var(--teal-hair); box-shadow: var(--shadow); background: var(--soft-aqua);
-    aspect-ratio: 4 / 5; max-height: 560px;
+    aspect-ratio: 4 / 5;
   }
-  .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slides {
+    display: flex; height: 100%; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .slides::-webkit-scrollbar { display: none; }
+  .slide { flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (prefers-reduced-motion: reduce) { .slides { scroll-behavior: auto; } }
   .hero-badge {
-    position: absolute; left: 1rem; bottom: 1rem; right: 1rem;
-    display: flex; align-items: center; gap: .9rem;
+    position: absolute; left: 1rem; bottom: 1rem; right: auto; pointer-events: none;
+    display: flex; align-items: center; gap: .8rem;
     background: rgba(255,255,255,.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 70, 81, .1); border-radius: 16px; padding: .85rem 1rem;
+    border: 1px solid rgba(0, 70, 81, .1); border-radius: 14px; padding: .7rem .95rem;
   }
-  .hero-badge .num { font-size: clamp(1.9rem, 3vw, 2.4rem); font-weight: 800; line-height: 1; color: var(--uproot-blue); letter-spacing: -.03em; min-width: 2ch; }
-  .hero-badge .lbl { font-size: .84rem; font-weight: 600; color: var(--uproot-deep); line-height: 1.3; }
-  .hero-badge .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: .78rem; }
+  .hero-badge .num { font-size: clamp(1.7rem, 2.6vw, 2.1rem); font-weight: 800; line-height: 1; color: var(--uproot-blue); letter-spacing: -.03em; min-width: 2ch; }
+  .hero-badge .lbl { font-size: .82rem; font-weight: 600; color: var(--uproot-deep); line-height: 1.3; }
+  .hero-badge .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: .76rem; }
+  .hero-cap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .hero-cap p { margin: 0; font-size: .86rem; color: var(--muted); line-height: 1.45; }
+  .hero-cap p b { color: var(--uproot-deep); font-weight: 700; }
+  .car-nav { display: inline-flex; align-items: center; gap: .35rem; flex-shrink: 0; }
+  .car-nav .idx { font-size: .8rem; font-weight: 700; color: var(--uproot-deep); min-width: 2.6rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .car-btn {
+    width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1.5px solid var(--uproot-deep);
+    background: var(--white); color: var(--uproot-deep); font: inherit; font-weight: 700; font-size: 1rem;
+    display: grid; place-items: center; cursor: pointer; transition: .15s ease; line-height: 1;
+  }
+  .car-btn:hover { background: var(--uproot-blue); border-color: var(--uproot-blue); color: var(--black); }
 
   /* ---------- The company ---------- */
   .about-grid { display: grid; gap: 1.15rem; grid-template-columns: 1.35fr .65fr; align-items: stretch; }
@@ -384,11 +404,13 @@
     .role { grid-template-columns: 1fr; }
     .retailer-bar .names li + li { border-left: 0; padding-left: 0; }
     .retailer-bar .names { gap: .75rem 1.25rem; }
-    .hero-photo { max-height: 440px; }
+    .hero-media { max-width: none; justify-self: stretch; }
+    .hero-cap { flex-wrap: wrap; }
     .wait-actions { justify-content: flex-start; }
   }
   @media (max-width: 420px) {
-    .hero-badge { flex-direction: column; align-items: flex-start; gap: .35rem; }
+    .hero-badge { gap: .6rem; padding: .55rem .75rem; }
+    .hero-badge .lbl small { display: none; }
   }
 
   /* Poppins Latin 400-800, self-hosted inline: no third-party font request, no FOUT on first paint.
@@ -571,14 +593,38 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <p class="meta-row">Marketing · Operations · Finance — remote across <b>8 countries</b></p>
         </div>
 
-        <div class="hero-photo">
-          <!-- Team photo: swap src for the real image (4:5 portrait, ≥1400px wide) and give it a descriptive alt. -->
-          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1400 1750%22 role=%22img%22 aria-label=%22%22%3E %3Cdefs%3E %3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23d6f2f0%22/%3E%3Cstop offset=%22.55%22 stop-color=%22%23eaf8f7%22/%3E%3Cstop offset=%221%22 stop-color=%22%23fdfaf0%22/%3E%3C/linearGradient%3E %3CradialGradient id=%22r%22 cx=%22.8%22 cy=%22.12%22 r=%22.7%22%3E%3Cstop offset=%220%22 stop-color=%22%2300d1db%22 stop-opacity=%22.42%22/%3E%3Cstop offset=%221%22 stop-color=%22%2300d1db%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E %3Cpattern id=%22d%22 width=%2256%22 height=%2256%22 patternUnits=%22userSpaceOnUse%22%3E%3Ccircle cx=%224%22 cy=%224%22 r=%222.2%22 fill=%22%23004651%22 fill-opacity=%22.09%22/%3E%3C/pattern%3E %3C/defs%3E %3Crect width=%221400%22 height=%221750%22 fill=%22url(%23g)%22/%3E %3Crect width=%221400%22 height=%221750%22 fill=%22url(%23r)%22/%3E %3Crect width=%221400%22 height=%221750%22 fill=%22url(%23d)%22/%3E %3Cpath d=%22M700 560c22 118 92 188 210 210-118 22-188 92-210 210-22-118-92-188-210-210 118-22 188-92 210-210z%22 fill=%22%23004651%22 fill-opacity=%22.13%22/%3E %3Cpath d=%22M1010 1020c10 54 42 86 96 96-54 10-86 42-96 96-10-54-42-86-96-96 54-10 86-42 96-96z%22 fill=%22%2300d1db%22 fill-opacity=%22.35%22/%3E %3Cpath d=%22M360 1120c7 38 30 61 68 68-38 7-61 30-68 68-7-38-30-61-68-68 38-7 61-30 68-68z%22 fill=%22%2300d1db%22 fill-opacity=%22.3%22/%3E %3C/svg%3E" alt="" width="1400" height="1750" fetchpriority="high" />
-          <div class="hero-badge">
-            <span class="num" id="open-count" aria-live="polite">&nbsp;</span>
-            <span class="lbl">Open roles right now<small>Fully remote · 8 countries</small></span>
+        <figure class="hero-media">
+          <div class="hero-photo" id="team-carousel" aria-roledescription="carousel" aria-label="Uproot Clean team photos">
+            <div class="slides" id="team-slides" tabindex="0">
+            <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 2">
+              <picture>
+                <source type="image/webp" srcset="assets/team-1-800.webp 800w, assets/team-1-1400.webp 1400w" sizes="(max-width: 760px) 100vw, 45vw" />
+                <img src="assets/team-1-1400.jpg" srcset="assets/team-1-800.jpg 800w, assets/team-1-1400.jpg 1400w" sizes="(max-width: 760px) 100vw, 45vw"
+                     width="1400" height="1750" alt="Three Uproot Clean team members in teal aprons celebrating on stage under the Global Pet Expo Pet Tech Category banner" fetchpriority="high" />
+              </picture>
+            </div>
+            <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 2">
+              <picture>
+                <source type="image/webp" srcset="assets/team-2-800.webp 800w, assets/team-2-1400.webp 1400w" sizes="(max-width: 760px) 100vw, 45vw" />
+                <img src="assets/team-2-1400.jpg" srcset="assets/team-2-800.jpg 800w, assets/team-2-1400.jpg 1400w" sizes="(max-width: 760px) 100vw, 45vw"
+                     width="1400" height="1750" alt="The Uproot Clean team holding the first-place award in front of the Global Pet Expo sign" loading="eager" fetchpriority="low" />
+              </picture>
+            </div>
+            </div>
+            <div class="hero-badge">
+              <span class="num" id="open-count" aria-live="polite">&nbsp;</span>
+              <span class="lbl">Open roles right now<small>Fully remote · 8 countries</small></span>
+            </div>
           </div>
-        </div>
+          <figcaption class="hero-cap">
+            <p><b>Uproot Clean team accepting 1st Place Award at Global Pet 2026 for Pet Tech Innovation</b></p>
+            <div class="car-nav">
+              <button class="car-btn" type="button" id="car-prev" aria-label="Previous photo" aria-controls="team-slides">&larr;</button>
+              <span class="idx" id="car-idx" aria-live="polite">1 / 2</span>
+              <button class="car-btn" type="button" id="car-next" aria-label="Next photo" aria-controls="team-slides">&rarr;</button>
+            </div>
+          </figcaption>
+        </figure>
       </div>
     </section>
 
@@ -843,6 +889,48 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   (function () {
     'use strict';
     document.getElementById('year').textContent = String(new Date().getFullYear());
+
+    // ---- team photo carousel (scroll-snap track; buttons + keys + autoplay) ----
+    (function () {
+      var track = document.getElementById('team-slides');
+      if (!track) return;
+      var idx = document.getElementById('car-idx');
+      var n = track.children.length;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var current = function () { return Math.round(track.scrollLeft / track.clientWidth); };
+      var setIdx = function (i) { idx.textContent = (i + 1) + ' / ' + n; };
+      var go = function (i) {
+        i = (i + n) % n;
+        track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+        setIdx(i);
+      };
+      document.getElementById('car-prev').addEventListener('click', function () { go(current() - 1); stop(); });
+      document.getElementById('car-next').addEventListener('click', function () { go(current() + 1); stop(); });
+      track.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { go(current() + 1); stop(); e.preventDefault(); }
+        if (e.key === 'ArrowLeft')  { go(current() - 1); stop(); e.preventDefault(); }
+      });
+      if ('IntersectionObserver' in window) {
+        // authoritative: whichever slide is mostly in view is the current one (covers swipe, keys, autoplay)
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) setIdx(Array.prototype.indexOf.call(track.children, e.target)); });
+        }, { root: track, threshold: 0.6 });
+        Array.prototype.forEach.call(track.children, function (s) { io.observe(s); });
+      } else {
+        var t;
+        track.addEventListener('scroll', function () { clearTimeout(t); t = setTimeout(function () { setIdx(current()); }, 80); }, { passive: true });
+      }
+      // autoplay: gentle, and it stops the moment the visitor touches it
+      var timer = null;
+      function start() { if (reduce || n < 2 || timer) return; timer = setInterval(function () { go(current() + 1); }, 6000); }
+      function stop() { clearInterval(timer); timer = null; }
+      var wrap = document.getElementById('team-carousel');
+      wrap.addEventListener('mouseenter', stop); wrap.addEventListener('focusin', stop);
+      wrap.addEventListener('touchstart', stop, { passive: true }); wrap.addEventListener('pointerdown', stop);
+      document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+      window.addEventListener('resize', function () { go(current()); });
+      start();
+    })();
 
     var BOARD = 'uprootclean';
     var API = 'https://api.ashbyhq.com/posting-api/job-board/' + BOARD;
