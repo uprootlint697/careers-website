@@ -54,7 +54,7 @@ The hero's right column is a two-photo carousel (`#team-carousel`) of the team a
 `<picture>` serves WebP with JPEG fallback; `srcset`/`sizes` pick the width. Every image has a
 descriptive `alt`. The originals (4000×5000) are not in the repo.
 
-How it works: a horizontal `scroll-snap` track, so touch swipe is native. Prev/next buttons and
+How it works (shared `carousel()` helper, also used for the awards strip): a horizontal `scroll-snap` track, so touch swipe is native. Prev/next buttons and
 ←/→ keys (when the track is focused) call `scrollTo`; a `1 / 2` counter follows the scroll
 position. Autoplay advances every 6 s and stops permanently on hover, focus, touch or click, and
 is disabled under `prefers-reduced-motion`. No library.
@@ -65,11 +65,14 @@ and controls pick up the new count automatically.
 
 ## Award badges
 
-"Award-winning" in The Company shows four badges (`.awards-strip`):
+"Award-winning" in The Company is a compact strip (`.awards-strip`): copy + controls on the left, a
+one-badge-at-a-time carousel on the right (same `carousel()` helper as the hero; autoplays every
+3.5 s, dots + arrows, stops on interaction). Each slide sits on a brand wash (blush / periwinkle /
+mint / butter) and every badge is rendered in deep teal (`--uproot-deep`):
 
 | Badge | Source | Fact basis |
 |---|---|---|
-| Global Pet Expo 2024 · Pet Tech Innovation | **Official** — `assets/award-gpe-2024.png`, the file already used on uprootclean.com | Best in Show, New Products Showcase, Apr 2024 |
+| Global Pet Expo 2024 · Pet Tech Innovation | **Official** — `assets/award-gpe-2024.png`, the file already used on uprootclean.com, recoloured black → deep teal (alpha preserved) | Best in Show, New Products Showcase, Apr 2024 |
 | SuperZoo 2024 · Innovation Launch Prize | Recreated inline SVG | 1st Place Purina Petcare Innovation Launch Prize, Aug 2024 (NPS entry was 1st runner-up) |
 | Global Pet Expo 2026 · Pet Tech Innovation | Recreated inline SVG | Best in Show, Laundry Cycle Pro, Mar 2026 |
 | SuperZoo 2026 · Home & Lifestyle | Recreated inline SVG | 1st Place Best New Product, Washing Machine Cleaner Pro, Aug 2026 |
@@ -124,12 +127,12 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (65): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (69): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
 doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
 no leaked CSS, API-down / API-empty / hostile-title paths, and round-4 copy (nav labels, 10,000+ doors, Why Join headline, six benefit
 cards with amounts), interview steps (1, 2, 3, 3a, 4; 3a flagged as select-roles-only; 5-up grid at 1280;
-equal card heights, no overflow), award strip (Featured-in gone; 1 official + 3 SVG badges, labelled, equal height,
-text inside its band). Last run 2026-09-17: all green.
+equal card heights, no overflow), award carousel (Featured-in gone; 1 official + 3 SVG badges, labelled, text inside its band, strip
+< 220 px tall, 4 dots, next/dot navigation). Last run 2026-09-17: all green.

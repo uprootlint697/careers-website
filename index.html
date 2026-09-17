@@ -249,15 +249,29 @@
   .logo-target { height: 30px; }
   .logo-petco { height: 24px; }
 
-  /* awards */
-  .awards-strip { background: var(--white); border: var(--teal-hair); border-radius: var(--r-card); padding: 1.05rem 1.35rem 1.25rem; margin-top: 1.15rem; box-shadow: var(--shadow); }
-  .awards-strip .label { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--uproot-deep); margin-bottom: .9rem; }
-  .awards { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem 1.5rem; }
-  .awards li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .6rem; }
-  .badge { display: block; height: 190px; width: auto; max-width: 100%; }
-  .awards figcaption { font-size: .86rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
-  .awards figcaption small { display: block; font-size: .76rem; font-weight: 600; color: var(--muted); margin-top: .1rem; }
-  .badge text { font-family: var(--font); fill: #000; text-anchor: middle; font-weight: 800; }
+  /* awards: compact strip, one badge at a time */
+  .awards-strip {
+    margin-top: 1.15rem; background: var(--white); border: var(--teal-hair); border-radius: var(--r-card); box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 1.25rem; padding: 1.1rem 1.35rem 1.1rem;
+  }
+  .awards-copy .label { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--uproot-deep); margin-bottom: .45rem; }
+  .awards-h { margin: 0 0 .3rem; font-size: 1.25rem; font-weight: 800; letter-spacing: -.015em; color: var(--ink); line-height: 1.2; }
+  .awards-p { margin: 0 0 .9rem; font-size: .9rem; color: var(--muted); }
+  .car-btn-sm { width: 2rem; height: 2rem; font-size: .9rem; }
+  .dots { display: inline-flex; gap: .4rem; padding: 0 .25rem; }
+  .dot { width: .55rem; height: .55rem; border-radius: 50%; border: 0; padding: 0; background: rgba(0, 70, 81, .2); cursor: pointer; transition: .15s ease; }
+  .dot[aria-current="true"] { background: var(--uproot-blue); transform: scale(1.25); }
+  .award-track-wrap { border-radius: 16px; overflow: hidden; }
+  .award-slides { height: auto; scrollbar-width: none; }
+  .award-slide {
+    flex: 0 0 100%; margin: 0; height: 176px; scroll-snap-align: start; scroll-snap-stop: always;
+    display: flex; align-items: center; gap: 1rem; padding: .9rem 1.1rem; color: var(--uproot-deep);
+  }
+  .wash-blush { background: var(--blush); } .wash-periwinkle { background: var(--periwinkle); } .wash-mint { background: var(--mint); } .wash-butter { background: var(--butter); }
+  .badge { display: block; height: 150px; width: auto; flex-shrink: 0; }
+  .award-slide figcaption { font-size: 1rem; font-weight: 800; color: var(--ink); line-height: 1.25; }
+  .award-slide figcaption small { display: block; font-size: .82rem; font-weight: 600; color: var(--muted); margin-top: .2rem; }
+  .badge text { font-family: var(--font); fill: currentColor; text-anchor: middle; font-weight: 800; }
   .badge .b-show { font-size: 52px; letter-spacing: .02em; }
   .badge .b-one { fill: #fff; font-size: 210px; letter-spacing: -.04em; }
   .badge .b-st { fill: #fff; font-size: 44px; text-anchor: start; }
@@ -441,8 +455,9 @@
     .retailer-bar .names li + li { border-left: 0; padding-left: 0; }
     .retailer-bar .names { gap: .75rem 1.25rem; }
     .retailer-bar .doors { margin-left: 0; }
-    .awards { grid-template-columns: repeat(2, 1fr); gap: 1.25rem 1rem; }
-    .badge { height: 150px; }
+    .awards-strip { grid-template-columns: 1fr; gap: .9rem; }
+    .award-slide { height: 150px; }
+    .badge { height: 126px; }
     .hero-media { max-width: none; justify-self: stretch; }
     .hero-cap { flex-wrap: wrap; }
     .wait-actions { justify-content: flex-start; }
@@ -696,59 +711,70 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <div class="doors"><b>10,000+</b> retail doors</div>
         </div>
 
-        <div class="awards-strip">
-          <div class="label">Award-winning</div>
-          <ul class="awards" aria-label="Industry awards">
-            <li>
-              <img class="badge" src="assets/award-gpe-2024.png" width="640" height="726" alt="Global Pet Expo 2024 New Products Showcase — 1st Place, Pet Tech Innovation, Best in Show" loading="lazy" />
+        <div class="awards-strip" id="awards-carousel" aria-roledescription="carousel" aria-label="Industry awards">
+          <div class="awards-copy">
+            <div class="label">Award-winning</div>
+            <p class="awards-h">Four first-place trophies in two years.</p>
+            <p class="awards-p">Best in Show at Global Pet Expo and SuperZoo, 2024 and 2026.</p>
+            <div class="car-nav">
+              <button class="car-btn car-btn-sm" type="button" id="aw-prev" aria-label="Previous award" aria-controls="award-slides">&larr;</button>
+              <div class="dots" id="aw-dots" role="group" aria-label="Choose award"></div>
+              <button class="car-btn car-btn-sm" type="button" id="aw-next" aria-label="Next award" aria-controls="award-slides">&rarr;</button>
+            </div>
+          </div>
+          <div class="award-track-wrap">
+            <div class="slides award-slides" id="award-slides" tabindex="0">
+              <figure class="award-slide wash-blush" role="group" aria-roledescription="slide" aria-label="1 of 4">
+                <img class="badge" src="assets/award-gpe-2024.png" width="640" height="726" alt="Global Pet Expo 2024 New Products Showcase — 1st Place, Pet Tech Innovation, Best in Show" loading="lazy" />
               <figcaption>Global Pet Expo 2024<small>Pet Tech Innovation</small></figcaption>
-            </li>
-            <li>
-              <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="SuperZoo 2024 — 1st Place, Purina Petcare Innovation Launch Prize" focusable="false">
+              </figure>
+              <figure class="award-slide wash-periwinkle" role="group" aria-roledescription="slide" aria-label="2 of 4">
+                <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="SuperZoo 2024 — 1st Place, Purina Petcare Innovation Launch Prize" focusable="false">
                 <text x="320" y="96" class="b-show">SUPERZOO</text>
-                <circle cx="320" cy="282" r="150" fill="#000"/>
+                <circle cx="320" cy="282" r="150" fill="currentColor"/>
                 <text x="296" y="322" class="b-one">1</text><text x="352" y="252" class="b-st">ST</text>
                 <text x="320" y="382" class="b-place">PLACE</text>
                 <text x="320" y="456" class="b-cat b-cat-2">INNOVATION</text><text x="320" y="490" class="b-cat b-cat-2">LAUNCH PRIZE</text>
-                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="#000"/>
-                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="#000"/>
-                <rect x="80" y="518" width="480" height="122" rx="6" fill="#000"/>
+                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="currentColor"/>
+                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="currentColor"/>
+                <rect x="80" y="518" width="480" height="122" rx="6" fill="currentColor"/>
                 <text x="320" y="575" class="b-r1">2024 WINNER</text>
                 <text x="320" y="618" class="b-r2">PURINA PETCARE</text>
               </svg>
               <figcaption>SuperZoo 2024<small>Innovation Launch Prize</small></figcaption>
-            </li>
-            <li>
-              <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="Global Pet Expo 2026 New Products Showcase — 1st Place, Pet Tech Innovation, Best in Show" focusable="false">
+              </figure>
+              <figure class="award-slide wash-mint" role="group" aria-roledescription="slide" aria-label="3 of 4">
+                <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="Global Pet Expo 2026 New Products Showcase — 1st Place, Pet Tech Innovation, Best in Show" focusable="false">
                 <text x="320" y="96" class="b-show">GLOBAL PET EXPO</text>
-                <circle cx="320" cy="282" r="150" fill="#000"/>
+                <circle cx="320" cy="282" r="150" fill="currentColor"/>
                 <text x="296" y="322" class="b-one">1</text><text x="352" y="252" class="b-st">ST</text>
                 <text x="320" y="382" class="b-place">PLACE</text>
                 <text x="320" y="462" class="b-cat">PET TECH INNOVATION</text>
-                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="#000"/>
-                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="#000"/>
-                <rect x="80" y="518" width="480" height="122" rx="6" fill="#000"/>
+                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="currentColor"/>
+                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="currentColor"/>
+                <rect x="80" y="518" width="480" height="122" rx="6" fill="currentColor"/>
                 <text x="320" y="575" class="b-r1">2026 BEST IN SHOW</text>
                 <text x="320" y="618" class="b-r2">NEW PRODUCTS SHOWCASE</text>
               </svg>
               <figcaption>Global Pet Expo 2026<small>Pet Tech Innovation</small></figcaption>
-            </li>
-            <li>
-              <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="SuperZoo 2026 New Product Showcase — 1st Place, Home & Lifestyle" focusable="false">
+              </figure>
+              <figure class="award-slide wash-butter" role="group" aria-roledescription="slide" aria-label="4 of 4">
+                <svg class="badge" viewBox="0 0 640 726" role="img" aria-label="SuperZoo 2026 New Product Showcase — 1st Place, Home & Lifestyle" focusable="false">
                 <text x="320" y="96" class="b-show">SUPERZOO</text>
-                <circle cx="320" cy="282" r="150" fill="#000"/>
+                <circle cx="320" cy="282" r="150" fill="currentColor"/>
                 <text x="296" y="322" class="b-one">1</text><text x="352" y="252" class="b-st">ST</text>
                 <text x="320" y="382" class="b-place">PLACE</text>
                 <text x="320" y="462" class="b-cat">HOME &amp; LIFESTYLE</text>
-                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="#000"/>
-                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="#000"/>
-                <rect x="80" y="518" width="480" height="122" rx="6" fill="#000"/>
+                <polygon points="30,548 92,530 92,624 30,606 58,577" fill="currentColor"/>
+                <polygon points="610,548 548,530 548,624 610,606 582,577" fill="currentColor"/>
+                <rect x="80" y="518" width="480" height="122" rx="6" fill="currentColor"/>
                 <text x="320" y="573" class="b-r1 b-r1-long">2026 BEST NEW PRODUCT</text>
                 <text x="320" y="618" class="b-r2">NEW PRODUCT SHOWCASE</text>
               </svg>
               <figcaption>SuperZoo 2026<small>Home &amp; Lifestyle</small></figcaption>
-            </li>
-          </ul>
+              </figure>
+            </div>
+          </div>
         </div>
 
         <div class="trio">
@@ -992,22 +1018,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     'use strict';
     document.getElementById('year').textContent = String(new Date().getFullYear());
 
-    // ---- team photo carousel (scroll-snap track; buttons + keys + autoplay) ----
-    (function () {
-      var track = document.getElementById('team-slides');
-      if (!track) return;
-      var idx = document.getElementById('car-idx');
+    // ---- carousel: scroll-snap track + buttons + arrow keys + optional dots + autoplay ----
+    function carousel(o) {
+      var wrap = document.getElementById(o.root), track = document.getElementById(o.track);
+      if (!wrap || !track) return;
       var n = track.children.length;
+      var idx = o.idx && document.getElementById(o.idx);
+      var dots = o.dots && document.getElementById(o.dots);
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var current = function () { return Math.round(track.scrollLeft / track.clientWidth); };
-      var setIdx = function (i) { idx.textContent = (i + 1) + ' / ' + n; };
+      if (dots) {
+        for (var d = 0; d < n; d++) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'dot';
+          b.setAttribute('aria-label', 'Go to item ' + (d + 1)); b.setAttribute('data-i', d);
+          b.addEventListener('click', function () { go(+this.getAttribute('data-i')); stop(); });
+          dots.appendChild(b);
+        }
+      }
+      var setIdx = function (i) {
+        if (idx) idx.textContent = (i + 1) + ' / ' + n;
+        if (dots) Array.prototype.forEach.call(dots.children, function (b, k) { b.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+      };
       var go = function (i) {
         i = (i + n) % n;
         track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
         setIdx(i);
       };
-      document.getElementById('car-prev').addEventListener('click', function () { go(current() - 1); stop(); });
-      document.getElementById('car-next').addEventListener('click', function () { go(current() + 1); stop(); });
+      document.getElementById(o.prev).addEventListener('click', function () { go(current() - 1); stop(); });
+      document.getElementById(o.next).addEventListener('click', function () { go(current() + 1); stop(); });
       track.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowRight') { go(current() + 1); stop(); e.preventDefault(); }
         if (e.key === 'ArrowLeft')  { go(current() - 1); stop(); e.preventDefault(); }
@@ -1017,22 +1055,23 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var io = new IntersectionObserver(function (entries) {
           entries.forEach(function (e) { if (e.isIntersecting) setIdx(Array.prototype.indexOf.call(track.children, e.target)); });
         }, { root: track, threshold: 0.6 });
-        Array.prototype.forEach.call(track.children, function (s) { io.observe(s); });
+        Array.prototype.forEach.call(track.children, function (sl) { io.observe(sl); });
       } else {
         var t;
         track.addEventListener('scroll', function () { clearTimeout(t); t = setTimeout(function () { setIdx(current()); }, 80); }, { passive: true });
       }
       // autoplay: gentle, and it stops the moment the visitor touches it
       var timer = null;
-      function start() { if (reduce || n < 2 || timer) return; timer = setInterval(function () { go(current() + 1); }, 6000); }
+      function start() { if (reduce || n < 2 || timer) return; timer = setInterval(function () { go(current() + 1); }, o.every || 6000); }
       function stop() { clearInterval(timer); timer = null; }
-      var wrap = document.getElementById('team-carousel');
       wrap.addEventListener('mouseenter', stop); wrap.addEventListener('focusin', stop);
       wrap.addEventListener('touchstart', stop, { passive: true }); wrap.addEventListener('pointerdown', stop);
       document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
       window.addEventListener('resize', function () { go(current()); });
-      start();
-    })();
+      setIdx(0); start();
+    }
+    carousel({ root: 'team-carousel', track: 'team-slides', prev: 'car-prev', next: 'car-next', idx: 'car-idx', every: 6000 });
+    carousel({ root: 'awards-carousel', track: 'award-slides', prev: 'aw-prev', next: 'aw-next', dots: 'aw-dots', every: 3500 });
 
     var BOARD = 'uprootclean';
     var API = 'https://api.ashbyhq.com/posting-api/job-board/' + BOARD;
