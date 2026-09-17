@@ -63,6 +63,23 @@ is disabled under `prefers-reduced-motion`. No library.
 copy one `<div class="slide">` block in `index.html` and update the paths and `alt`. The counter
 and controls pick up the new count automatically.
 
+## Award badges
+
+"Award-winning" in The Company shows four badges (`.awards-strip`):
+
+| Badge | Source | Fact basis |
+|---|---|---|
+| Global Pet Expo 2024 · Pet Tech Innovation | **Official** — `assets/award-gpe-2024.png`, the file already used on uprootclean.com | Best in Show, New Products Showcase, Apr 2024 |
+| SuperZoo 2024 · Innovation Launch Prize | Recreated inline SVG | 1st Place Purina Petcare Innovation Launch Prize, Aug 2024 (NPS entry was 1st runner-up) |
+| Global Pet Expo 2026 · Pet Tech Innovation | Recreated inline SVG | Best in Show, Laundry Cycle Pro, Mar 2026 |
+| SuperZoo 2026 · Home & Lifestyle | Recreated inline SVG | 1st Place Best New Product, Washing Machine Cleaner Pro, Aug 2026 |
+
+The three recreations copy the official badge's grammar (show name / 1st Place disc / category /
+ribbon) in Poppins so the set reads as one. Official winner badges are distributed to exhibitors via
+the Global Pet Expo and WPA (SuperZoo) exhibitor hubs and are not publicly downloadable — when you
+have them, drop the PNGs into `assets/` and replace the corresponding `<svg class="badge">` with an
+`<img class="badge">` like the 2024 one.
+
 ## Retailer logos
 
 "Where we sell" shows Amazon, Walmart, Target and Petco as **inline SVG wordmarks** (official
@@ -85,9 +102,8 @@ sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.
 
 ## Content status
 
-Confirmed by Mehul (2026-09-17): retail footprint **10,000+ doors**; press — Good Morning America,
-BuzzFeed, Pet Age, The New York Times; awards — 1st Place Global Pet Expo 2024 & 2026, 1st Place
-SuperZoo 2024 & 2026; benefits — Autonomy,
+Confirmed by Mehul (2026-09-17): retail footprint **10,000+ doors**; awards — 1st Place Global Pet
+Expo 2024 & 2026, 1st Place SuperZoo 2024 & 2026 (press list was added then removed for space); benefits — Autonomy,
 Wellness budget **$100–300/mo**, Pet budget **$40–100/mo**, Health/vision/dental insurance,
 Coaching & learning credits, Remote by design.
 
@@ -108,11 +124,12 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (61): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (65): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
 doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
 no leaked CSS, API-down / API-empty / hostile-title paths, and round-4 copy (nav labels, 10,000+ doors, Why Join headline, six benefit
 cards with amounts), interview steps (1, 2, 3, 3a, 4; 3a flagged as select-roles-only; 5-up grid at 1280;
-equal card heights, no overflow), press list and four award chips. Last run 2026-09-17: all green.
+equal card heights, no overflow), award strip (Featured-in gone; 1 official + 3 SVG badges, labelled, equal height,
+text inside its band). Last run 2026-09-17: all green.

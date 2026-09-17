@@ -76,11 +76,14 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const stepCols5 = await page.evaluate(() => getComputedStyle(document.querySelector('.steps')).gridTemplateColumns.split(' ').length);
     ok('hire: 5 columns at 1280', stepCols5 === 5, `${stepCols5}`);
     ok('hire: step cards equal height, no text overflow', await page.evaluate(() => { const c = [...document.querySelectorAll('.step')]; const hs = c.map(e => e.getBoundingClientRect().height); return Math.max(...hs) - Math.min(...hs) < 1 && c.every(e => e.scrollHeight <= e.clientHeight + 1); }));
-    const press = await page.$$eval('.press li', ls => ls.map(l => l.textContent.trim()));
-    ok('company: featured-in list', press.join('|') === 'Good Morning America|BuzzFeed|Pet Age|The New York Times', press.join('|'));
-    const awards = await page.$$eval('.awards li', ls => ls.map(l => l.textContent.replace(/\s+/g, ' ').replace('🏆', '').trim()));
-    ok('company: 4 first-place awards', awards.join('|') === '1st Place Global Pet Expo 2024|1st Place SuperZoo 2024|1st Place Global Pet Expo 2026|1st Place SuperZoo 2026', awards.join('|'));
-    ok('company: award chips do not overflow their card', await page.evaluate(() => { const c = document.querySelector('.awards').closest('.proof-card'); return c.scrollWidth <= c.clientWidth + 1; }));
+    ok('company: Featured-in removed', (await page.locator('.press, .proof').count()) === 0);
+    const aw = await page.$$eval('.awards li', ls => ls.map(l => ({ cap: [...l.querySelector('figcaption').childNodes].map(n => n.textContent.trim()).filter(Boolean).join(' '), kind: l.querySelector('img.badge') ? 'img' : (l.querySelector('svg.badge') ? 'svg' : 'none'), label: (l.querySelector('.badge').getAttribute('alt') || l.querySelector('.badge').getAttribute('aria-label')), h: l.querySelector('.badge').getBoundingClientRect().height, w: l.querySelector('.badge').getBoundingClientRect().width })));
+    ok('company: 4 award badges (1 official png + 3 svg)', aw.length === 4 && aw.map(a => a.kind).join() === 'img,svg,svg,svg', aw.map(a => a.kind).join());
+    ok('company: award captions', aw.map(a => a.cap).join('|') === 'Global Pet Expo 2024 Pet Tech Innovation|SuperZoo 2024 Innovation Launch Prize|Global Pet Expo 2026 Pet Tech Innovation|SuperZoo 2026 Home & Lifestyle', aw.map(a => a.cap).join('|'));
+    ok('company: badges labelled + rendered at equal height', aw.every(a => a.label && a.label.length > 20 && Math.abs(a.h - 190) < 1 && a.w > 100), JSON.stringify(aw.map(a => [Math.round(a.w), Math.round(a.h)])));
+    ok('company: official 2024 badge decoded', await page.evaluate(() => { const i = document.querySelector('img.badge'); return i.complete && i.naturalWidth === 640; }));
+    ok('company: badge text stays inside its band (ribbon text within 80–560, others within 20–620)', await page.evaluate(() => [...document.querySelectorAll('svg.badge text')].every(tx => { const b = tx.getBBox(); const ribbon = /b-r[12]/.test(tx.getAttribute('class')); const lo = ribbon ? 84 : 20, hi = ribbon ? 556 : 620; return b.x >= lo && b.x + b.width <= hi; })), await page.evaluate(() => [...document.querySelectorAll('svg.badge text')].map(tx => { const b = tx.getBBox(); return tx.textContent + ':' + Math.round(b.x) + '-' + Math.round(b.x + b.width); }).join(', ')));
+    ok('company: category text clears the ribbon', await page.evaluate(() => [...document.querySelectorAll('svg.badge .b-cat')].every(tx => { const b = tx.getBBox(); return b.y + b.height <= 512; })));
     // retailer logos
     const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
     ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());
