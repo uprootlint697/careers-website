@@ -137,8 +137,9 @@ sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.
 - **Domain:** `CNAME` = `careers.uprootclean.com`. DNS (Namecheap) needs one record:
   `careers  CNAME  uprootlint697.github.io`. GitHub provisions the TLS cert automatically once the
   record resolves; then enable *Enforce HTTPS* in repo Settings → Pages (or via the API).
-- **Until DNS is in place** the site is reachable at `https://uprootlint697.github.io/careers-website/`.
-  All links are relative, so it works at either address.
+- **Live since 2026-09-17.** DNS record added at Namecheap; the site answers at
+  `careers.uprootclean.com` (full QA suite passed against the live origin). `offer.uprootclean.com`
+  (another GitHub Pages site on the same account) is unaffected — each repo claims its own hostname.
 - **Storefront hookups (Shopify admin, one-time):** add a URL redirect `/careers` →
   `https://careers.uprootclean.com`, and change the footer "Careers" link (currently
   `jobs.ashbyhq.com/uprootclean`) to `https://careers.uprootclean.com`.
