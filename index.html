@@ -282,7 +282,7 @@
   .benefit p { margin: 0; color: var(--muted); font-size: .92rem; }
 
   /* ---------- How we hire ---------- */
-  .steps { display: grid; gap: 1.15rem; grid-template-columns: repeat(4, 1fr); margin: 0; padding: 0; list-style: none; }
+  .steps { display: grid; gap: 1.15rem; grid-template-columns: repeat(5, 1fr); margin: 0; padding: 0; list-style: none; }
   .step {
     position: relative; background: var(--white); border: var(--teal-hair); border-radius: 20px;
     padding: 1.25rem 1.2rem 1.35rem; display: flex; flex-direction: column;
@@ -294,12 +294,21 @@
   .step:last-child::after { display: none; }
   .step-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
   .step .n {
-    width: 1.85rem; height: 1.85rem; border-radius: 50%; background: var(--black); color: var(--white);
-    display: grid; place-items: center; font-size: .82rem; font-weight: 700; flex-shrink: 0;
+    min-width: 1.85rem; height: 1.85rem; padding: 0 .45rem; border-radius: 999px; background: var(--black); color: var(--white);
+    display: grid; place-items: center; font-size: .82rem; font-weight: 700; flex-shrink: 0; letter-spacing: -.01em;
   }
+  .step-opt { border-style: dashed; background: rgba(255,255,255,.7); }
+  .step-opt .n { background: var(--uproot-deep); }
+  .step-opt h3 { color: var(--uproot-deep); }
+  .opt-tag {
+    align-self: flex-start; margin-bottom: .6rem;
+    font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--uproot-deep); background: var(--soft-aqua); border: var(--teal-hair); border-radius: 999px; padding: .22rem .55rem;
+  }
+  .step-opt .pill { background: var(--uproot-deep); color: var(--white); }
   .step .glyph { font-size: 1.4rem; line-height: 1; }
   .step h3 { margin: 0 0 .5rem; font-size: 1rem; color: var(--uproot-deep); letter-spacing: -.005em; }
-  .step p { margin: 0 0 1.1rem; color: var(--ink); font-size: .9rem; }
+  .step p { margin: 0 0 1.1rem; color: var(--ink); font-size: .88rem; }
   .step .pill { margin-top: auto; align-self: flex-start; }
   .pill {
     display: inline-flex; align-items: center; gap: .35rem;
@@ -393,9 +402,11 @@
   footer a:hover { text-decoration: underline; }
 
   /* ---------- Responsive ---------- */
+  @media (max-width: 1100px) {
+    .steps { grid-template-columns: repeat(3, 1fr); }
+    .step:nth-child(3n)::after { display: none; }
+  }
   @media (max-width: 1000px) {
-    .steps { grid-template-columns: repeat(2, 1fr); }
-    .step:nth-child(2)::after { display: none; }
     .trio, .about-grid { grid-template-columns: 1fr 1fr; }
     .trio .card-span { grid-column: 1 / -1; }
     .nav-links { display: none; }
@@ -772,7 +783,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <p class="section-kicker">How we hire</p>
         <h2>Our interview process</h2>
         <p class="sub">
-          Four steps to explore the role, show your work, and meet the people you&rsquo;ll work with.
+          Four steps to explore the role, show your work, and meet the people you&rsquo;ll work with &mdash;
+          plus a paid trial project for some roles.
         </p>
         <ol class="steps" role="list" aria-label="Interview steps">
           <li class="step">
@@ -792,6 +804,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <h3>Team Manager Interview</h3>
             <p>Meet your manager to discuss the role&rsquo;s responsibilities and how you&rsquo;d work together.</p>
             <span class="pill"><span aria-hidden="true">⏱</span> 45 min</span>
+          </li>
+          <li class="step step-opt">
+            <div class="step-top"><div class="n">3a</div><span class="glyph" aria-hidden="true">🛠️</span></div>
+            <h3>Paid Trial Project</h3>
+            <p>A short paid project on a real problem, so we both see how you work. For specific roles only, not every hire.</p>
+            <span class="opt-tag">Select roles only</span>
+            <span class="pill"><span aria-hidden="true">⏱</span> 5–10 hrs · paid</span>
           </li>
           <li class="step">
             <div class="step-top"><div class="n">4</div><span class="glyph" aria-hidden="true">👥</span></div>

@@ -38,7 +38,7 @@ To point at a different board, change `BOARD` at the top of the script.
 ## Sections
 
 Hero (2-photo carousel + caption + live open-roles badge) · The company · Why join · Benefits · How we hire
-(4 steps, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
+(4 steps + optional paid trial project 3a, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
 
 ## Hero photo carousel
 
@@ -106,10 +106,11 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (55): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (58): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
 doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
 no leaked CSS, API-down / API-empty / hostile-title paths, and round-4 copy (nav labels, 10,000+ doors, Why Join headline, six benefit
-cards with amounts). Last run 2026-09-17: all green.
+cards with amounts), interview steps (1, 2, 3, 3a, 4; 3a flagged as select-roles-only; 5-up grid at 1280;
+equal card heights, no overflow). Last run 2026-09-17: all green.

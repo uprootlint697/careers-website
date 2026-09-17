@@ -71,13 +71,18 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('benefits: 6 cards in order', benefits.join('|') === 'Remote by design|Autonomy|Wellness budget|Pet budget|Health, vision & dental insurance|Coaching & learning credits', benefits.join('|'));
     const amounts = await page.$$eval('.benefit p', ps => ps.map(p => p.textContent));
     ok('benefits: budgets state amounts', amounts.some(a => a.includes('$100–300/mo')) && amounts.some(a => a.includes('$40–100/mo')));
+    const steps = await page.$$eval('.steps .step', els => els.map(e => ({ n: e.querySelector('.n').textContent.trim(), h: e.querySelector('h3').textContent.trim(), opt: e.classList.contains('step-opt'), pill: e.querySelector('.pill').textContent.trim() })));
+    ok('hire: 5 cards incl. 3a Paid Trial Project', steps.map(s => s.n).join() === '1,2,3,3a,4' && steps[3].h === 'Paid Trial Project' && steps[3].opt && /5–10 hrs/.test(steps[3].pill), JSON.stringify(steps.map(s => s.n + ':' + s.h)));
+    const stepCols5 = await page.evaluate(() => getComputedStyle(document.querySelector('.steps')).gridTemplateColumns.split(' ').length);
+    ok('hire: 5 columns at 1280', stepCols5 === 5, `${stepCols5}`);
+    ok('hire: step cards equal height, no text overflow', await page.evaluate(() => { const c = [...document.querySelectorAll('.step')]; const hs = c.map(e => e.getBoundingClientRect().height); return Math.max(...hs) - Math.min(...hs) < 1 && c.every(e => e.scrollHeight <= e.clientHeight + 1); }));
     // retailer logos
     const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
     ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());
     ok('retailers: logos have real size (Target bullseye is square)', logos.every(l => l.w >= 28 && l.h >= 20 && l.h <= 32), JSON.stringify(logos));
     ok('retailers: no leaked svg class rules', await page.evaluate(() => !document.querySelector('.retailer-bar svg style')));
     const stepCols = await page.evaluate(() => getComputedStyle(document.querySelector('.steps')).gridTemplateColumns.split(' ').length);
-    ok('desktop: interview steps 4 columns', stepCols === 4, `${stepCols}`);
+    ok('desktop: interview steps 5 columns', stepCols === 5, `${stepCols}`);
 
     // filters
     const chips = page.locator('#role-filters .chip');
