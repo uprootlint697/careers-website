@@ -85,7 +85,9 @@ sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.
 
 ## Content status
 
-Confirmed by Mehul (2026-09-17): retail footprint **10,000+ doors**; benefits — Autonomy,
+Confirmed by Mehul (2026-09-17): retail footprint **10,000+ doors**; press — Good Morning America,
+BuzzFeed, Pet Age, The New York Times; awards — 1st Place Global Pet Expo 2024 & 2026, 1st Place
+SuperZoo 2024 & 2026; benefits — Autonomy,
 Wellness budget **$100–300/mo**, Pet budget **$40–100/mo**, Health/vision/dental insurance,
 Coaching & learning credits, Remote by design.
 
@@ -106,11 +108,11 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (58): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (61): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
 doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
 no leaked CSS, API-down / API-empty / hostile-title paths, and round-4 copy (nav labels, 10,000+ doors, Why Join headline, six benefit
 cards with amounts), interview steps (1, 2, 3, 3a, 4; 3a flagged as select-roles-only; 5-up grid at 1280;
-equal card heights, no overflow). Last run 2026-09-17: all green.
+equal card heights, no overflow), press list and four award chips. Last run 2026-09-17: all green.

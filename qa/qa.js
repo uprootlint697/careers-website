@@ -76,6 +76,11 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const stepCols5 = await page.evaluate(() => getComputedStyle(document.querySelector('.steps')).gridTemplateColumns.split(' ').length);
     ok('hire: 5 columns at 1280', stepCols5 === 5, `${stepCols5}`);
     ok('hire: step cards equal height, no text overflow', await page.evaluate(() => { const c = [...document.querySelectorAll('.step')]; const hs = c.map(e => e.getBoundingClientRect().height); return Math.max(...hs) - Math.min(...hs) < 1 && c.every(e => e.scrollHeight <= e.clientHeight + 1); }));
+    const press = await page.$$eval('.press li', ls => ls.map(l => l.textContent.trim()));
+    ok('company: featured-in list', press.join('|') === 'Good Morning America|BuzzFeed|Pet Age|The New York Times', press.join('|'));
+    const awards = await page.$$eval('.awards li', ls => ls.map(l => l.textContent.replace(/\s+/g, ' ').replace('🏆', '').trim()));
+    ok('company: 4 first-place awards', awards.join('|') === '1st Place Global Pet Expo 2024|1st Place SuperZoo 2024|1st Place Global Pet Expo 2026|1st Place SuperZoo 2026', awards.join('|'));
+    ok('company: award chips do not overflow their card', await page.evaluate(() => { const c = document.querySelector('.awards').closest('.proof-card'); return c.scrollWidth <= c.clientWidth + 1; }));
     // retailer logos
     const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
     ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());
