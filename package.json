@@ -1,0 +1,12 @@
+{
+  "name": "uproot-careers",
+  "private": true,
+  "description": "Uproot Clean careers page — static, single file. `npm run qa` runs the Playwright checks.",
+  "scripts": {
+    "qa": "node qa/qa.js",
+    "open": "open index.html"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}
