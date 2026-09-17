@@ -232,10 +232,10 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('trial: this page (no trial) hides step 3a and the pill', await page.evaluate(() => !document.querySelector('.aside-steps li.opt') && !document.querySelector('.trial-pill') && document.querySelectorAll('.aside-steps li').length === 4));
     const tp = await ctx.newPage();
     await tp.goto(ORIGIN + '/' + trialIds[0].page); await tp.waitForTimeout(300);
-    ok('trial: Finance/Supply page shows pill, 3a step (5 steps) and At-a-glance row', await tp.evaluate(() => {
-      const pill = document.querySelector('.trial-pill'); const opt = document.querySelector('.aside-steps li.opt');
+    ok('trial: Finance/Supply page shows 3a in the interview loop + At-a-glance row, no pill under title', await tp.evaluate(() => {
+      const opt = document.querySelector('.aside-steps li.opt');
       const facts = [...document.querySelectorAll('.facts dt')].map(d => d.textContent.trim());
-      return pill && /paid trial project/.test(pill.textContent) && opt && /5–10 hrs/.test(opt.textContent) && document.querySelectorAll('.aside-steps li').length === 5 && facts.includes('Trial project');
+      return !document.querySelector('.trial-pill') && opt && /5–10 hrs/.test(opt.textContent) && document.querySelectorAll('.aside-steps li').length === 5 && facts.includes('Trial project');
     }));
     await tp.screenshot({ path: path.join(OUT, 'role-trial-desktop.png') });
     await tp.close();

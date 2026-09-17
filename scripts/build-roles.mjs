@@ -119,7 +119,6 @@ ${style}
         <p class="section-kicker">${esc(dept)}${team ? ` · ${esc(team)}` : ''}</p>
         <h1 id="role-title">${esc(j.title.trim())}</h1>
         <p class="meta-row role-meta">${bits.map(esc).join(' · ')}${posted ? ` · Posted ${esc(posted)}` : ''}</p>
-        ${trial ? `<p class="trial-pill"><span aria-hidden="true">🛠️</span> This role includes a <b>paid trial project</b> (5–10 hrs) after the team manager interview.</p>` : ''}
         <div class="hero-cta">
           <a class="btn btn-primary btn-lg" href="${apply}" target="_blank" rel="noopener" data-apply>Apply now <span class="arw" aria-hidden="true">→</span></a>
           <a class="btn btn-ghost" href="../index.html#fit">Not sure? Check the fit</a>
