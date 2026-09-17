@@ -62,6 +62,15 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     await page.waitForFunction(() => document.getElementById('team-slides').scrollLeft < 2, null, { timeout: 3000 }).catch(() => {});
     ok('hero: carousel track does not widen the page', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     ok('hero: webp source offered', (await page.locator('.slide source[type="image/webp"]').count()) === 2);
+    // round-4 copy checks
+    const navLabels = await page.$$eval('.nav-links a', as => as.map(a => a.textContent.trim()));
+    ok('nav: 4 links, Title Case, no Fit check', navLabels.join('|') === 'The Company|Why Join|Benefits|How We Hire', navLabels.join('|'));
+    ok('company: 10,000+ retail doors shown', (await page.locator('.retailer-bar .doors').innerText()).replace(/\s+/g, ' ').trim() === '10,000+ retail doors');
+    ok('why: new headline', (await page.locator('#why h2').innerText()) === 'Own the work that shows up in millions of homes every year.');
+    const benefits = await page.$$eval('.benefit h3', hs => hs.map(h => h.textContent.trim()));
+    ok('benefits: 6 cards in order', benefits.join('|') === 'Remote by design|Autonomy|Wellness budget|Pet budget|Health, vision & dental insurance|Coaching & learning credits', benefits.join('|'));
+    const amounts = await page.$$eval('.benefit p', ps => ps.map(p => p.textContent));
+    ok('benefits: budgets state amounts', amounts.some(a => a.includes('$100–300/mo')) && amounts.some(a => a.includes('$40–100/mo')));
     // retailer logos
     const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
     ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());

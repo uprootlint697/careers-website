@@ -83,16 +83,18 @@ sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.
 - If hosted as a Shopify page, the inline `<style>` and `<script>` need to be allowed in the
   page template; nothing else changes.
 
-## Content still to confirm (from the original hiring spec)
+## Content status
 
-These were carried from the draft's source boards and are published as written. Verify or
-strike before go-live:
+Confirmed by Mehul (2026-09-17): retail footprint **10,000+ doors**; benefits — Autonomy,
+Wellness budget **$100–300/mo**, Pet budget **$40–100/mo**, Health/vision/dental insurance,
+Coaching & learning credits, Remote by design.
+
+Still carried from the original hiring spec, not yet confirmed:
 
 - **5M+ customers served** (stat card)
-- Benefits copy: PTO + flex days, performance bonus, health coverage, wellness & pet support,
-  coaching & learning credits — amounts are intentionally not stated
 - Team locations: USA, Canada, Argentina, Brazil, Lithuania, India, Pakistan, Philippines (8)
-- Retail partners: Amazon, Walmart, Target, Petco
+- "Paid time off plus flex days" and "A learning budget you direct" bullets in the *Why Join*
+  cards (PTO was dropped from the Benefits grid; the bullet remains in Why Join)
 
 ## QA
 
@@ -104,9 +106,10 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (50): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (55): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
 doesn't widen the page, caption text exact), badge inside the photo, 4 labelled retailer logos with
-no leaked CSS, API-down / API-empty / hostile-title paths. Last run 2026-09-17: all green.
+no leaked CSS, API-down / API-empty / hostile-title paths, and round-4 copy (nav labels, 10,000+ doors, Why Join headline, six benefit
+cards with amounts). Last run 2026-09-17: all green.
