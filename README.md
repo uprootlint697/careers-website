@@ -56,6 +56,14 @@ sidebar steps; other roles show a 4-step sidebar with no 3a. The homepage tags t
 project" in the list and names them in the 3a card. Currently: Finance Manager (CPA Required),
 Supply Chain Manager.
 
+`compensation` maps a role (title or id) to `{ text, min, max, currency, unit }`: `text` shows as a
+*Compensation* row in At a glance; the numbers feed `baseSalary` in the JobPosting JSON-LD (Google
+Jobs uses it). Currently set for Finance Manager (CPA Required).
+
+On phones the At a glance card renders **above** the JD (and How we hire below it) so the facts and
+the Apply button are visible without scrolling past the description; on desktop it's the sticky
+right sidebar.
+
 Run `npm run build:roles` whenever roles are added or edited in Ashby, or the config changes (or on
 a schedule).
 
@@ -197,7 +205,7 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (99): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (104): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
