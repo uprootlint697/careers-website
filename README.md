@@ -4,7 +4,7 @@ Careers page for [Uproot Clean](https://uprootclean.com). Destined to live on `u
 
 ## What it is
 
-`index.html` — one self-contained page. Inline CSS, Poppins embedded as data URIs (no third-party
+`index.html` — the careers home, one self-contained page. Inline CSS, Poppins embedded as data URIs (no third-party
 font request), a 1.4 KB inline favicon, and one small script. No build step, no dependencies.
 
 ```bash
@@ -13,18 +13,45 @@ open index.html
 
 ## Live roles from Ashby
 
-Open roles are **not hardcoded**. On load the page calls Ashby's public job-board API
+Open roles are **not hardcoded**. On load the homepage calls Ashby's public job-board API
 
 ```
 GET https://api.ashbyhq.com/posting-api/job-board/uprootclean
 ```
 
 (CORS `*`, no auth) and renders every listed posting with its department, location, and
-employment type. Department filter chips are generated from the data. Each role links to its
-Ashby posting with `utm_source=uprootclean.com&utm_medium=careers-page`. The hero tile
-"Open roles right now" shows the live count.
+employment type. Department filter chips are generated from the data. The hero badge shows the
+live count.
 
-Fallbacks, all tested:
+### Role pages (`roles/<slug>.html`)
+
+Each role has its own page with the full job description **on the site**, and every "Apply now"
+button (nav, hero, sidebar, bottom CTA) goes **straight to the Ashby application form**
+(`…/<job-id>/application?utm_source=uprootclean.com&utm_medium=careers-page`) — not the Ashby JD.
+
+```bash
+npm run build:roles     # regenerate roles/*.html + roles/index.json from Ashby
+```
+
+`scripts/build-roles.mjs` fetches the API, cleans each `descriptionHtml` (strips inline styles,
+scripts and wrapper divs; promotes bold-only paragraphs to headings; drops a leading heading that
+just repeats the title), and renders it into a template that reuses `index.html`'s `<style>`
+(fonts included) and header. It also writes `roles/index.json` (job id → page) and deletes pages
+for roles that are no longer listed. Each page carries a `JobPosting` JSON-LD block with
+`directApply: true`.
+
+Keeping it fresh, two layers:
+
+1. The homepage list reads `roles/index.json` and links to the local page when one exists;
+   a brand-new posting that hasn't been built yet links straight to its Ashby application form,
+   so nothing 404s.
+2. Every role page re-checks Ashby on load: if the description changed it re-renders from the
+   API (sanitised client-side); if the role is no longer listed it shows "This role has closed"
+   and disables the Apply buttons.
+
+Run `npm run build:roles` whenever roles are added or edited in Ashby (or on a schedule).
+
+Fallbacks on the homepage, all tested:
 
 | Condition | Behaviour |
 |---|---|

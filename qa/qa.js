@@ -3,13 +3,25 @@
 const { chromium } = require('playwright');
 const path = require('path');
 
-const PAGE = 'file://' + path.resolve(__dirname, '..', 'index.html');
+// Serve the repo over HTTP like production; the file: scheme forbids fetch('roles/index.json').
+const http = require('http'), fs = require('fs');
+const SITE = path.resolve(__dirname, '..');
+const MIME = { '.html': 'text/html; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.css': 'text/css', '.js': 'text/javascript' };
+const server = http.createServer((req, res) => {
+  const p = path.join(SITE, decodeURIComponent(req.url.split('?')[0]));
+  if (!p.startsWith(SITE) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); return res.end(); }
+  res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream', 'cache-control': 'no-store' }); fs.createReadStream(p).pipe(res);
+});
+const PORT = 4173 + Math.floor(Math.random() * 500);
+const ORIGIN = `http://127.0.0.1:${PORT}`;
+const PAGE = ORIGIN + '/index.html';
 const OUT = path.join(__dirname, 'screenshots');
 require('fs').mkdirSync(OUT, { recursive: true });
 const report = { pass: [], fail: [] };
 const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name + (detail ? ` — ${detail}` : ''));
 
 (async () => {
+  await new Promise(r => server.listen(PORT, '127.0.0.1', r));
   const browser = await chromium.launch();
 
   // ---------- 1. Desktop, live API ----------
@@ -116,8 +128,11 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
 
     // links
     const hrefs = await page.$$eval('.role', as => as.map(a => ({ href: a.href, t: a.target, r: a.rel })));
-    ok('roles: every link → Ashby posting with UTM, new tab, noopener',
-      hrefs.every(h => /^https:\/\/jobs\.ashbyhq\.com\/uprootclean\/[0-9a-f-]{36}\?utm_source=uprootclean\.com&utm_medium=careers-page$/.test(h.href) && h.t === '_blank' && h.r === 'noopener'));
+    ok('roles: every listed role links to its local JD page (roles/<slug>.html)',
+      hrefs.length > 0 && hrefs.every(h => new RegExp('^' + ORIGIN + '/roles/[a-z0-9-]+\\.html$').test(h.href) && h.t === ''), hrefs.filter(h => !/\/roles\/[a-z0-9-]+\.html$/.test(h.href)).map(h => h.href).join(','));
+    const pagesJson = JSON.parse(require('fs').readFileSync(path.resolve(__dirname, '..', 'roles', 'index.json'), 'utf8'));
+    ok('roles: index.json covers every role in the live list', hrefs.every(h => Object.values(pagesJson.jobs).some(j => h.href.endsWith(j.page))), `${Object.keys(pagesJson.jobs).length} pages`);
+    for (const j of Object.values(pagesJson.jobs)) if (!require('fs').existsSync(path.resolve(__dirname, '..', j.page))) report.fail.push('roles: missing file ' + j.page);
 
     // in-page anchors resolve
     const anchors = await page.$$eval('a[href^="#"]', as => [...new Set(as.map(a => a.getAttribute('href')))]);
@@ -175,6 +190,52 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     await ctx.close();
   }
 
+  // ---------- 2b. Role page (JD + apply → Ashby application) ----------
+  {
+    const fs = require('fs');
+    const pagesJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'roles', 'index.json'), 'utf8'));
+    const [jobId, meta] = Object.entries(pagesJson.jobs)[0];
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    const errs = [], consoleErr = [];
+    page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') consoleErr.push(m.text()); });
+    const apiResp = page.waitForResponse(r => r.url().includes('api.ashbyhq.com'), { timeout: 15000 }).catch(() => null);
+    await page.goto(ORIGIN + '/' + meta.page);
+    await apiResp; await page.waitForTimeout(400);
+    ok('role: title matches Ashby', (await page.locator('h1#role-title').innerText()).trim() === meta.title, await page.locator('h1').innerText());
+    ok('role: <title> carries the job title', (await page.title()).startsWith(meta.title));
+    const applies = await page.$$eval('a[data-apply], .nav-inner a.btn', as => as.map(a => ({ href: a.href, t: a.target, r: a.rel, txt: a.textContent.trim() })));
+    ok('role: apply links top + aside + bottom (4) → Ashby /application with UTM, new tab',
+      applies.length === 4 && applies.every(a => a.href === meta.apply && a.t === '_blank' && a.r === 'noopener' && /^Apply now/.test(a.txt)), JSON.stringify(applies.map(a => a.href.split('/').slice(-2).join('/'))));
+    ok('role: apply URL is the application form, not the JD', /\/application\?utm_source=uprootclean\.com&utm_medium=careers-page$/.test(meta.apply) && !/\/[0-9a-f-]{36}\?/.test(meta.apply));
+    const jd = await page.evaluate(() => { const el = document.getElementById('jd'); return { text: el.innerText.trim().length, h3: el.querySelectorAll('h3').length, li: el.querySelectorAll('li').length, styled: el.querySelectorAll('[style]').length, scripts: el.querySelectorAll('script,iframe').length }; });
+    ok('role: JD content present (>1500 chars, headings, bullets)', jd.text > 1500 && jd.h3 >= 3 && jd.li >= 5, JSON.stringify(jd));
+    ok('role: JD has no inline styles or scripts', jd.styled === 0 && jd.scripts === 0);
+    ok('role: first JD heading is not a duplicate of the title', (await page.evaluate(() => { const h = document.querySelector('#jd h3'); return h ? h.textContent.trim().toLowerCase() : ''; })) !== meta.title.toLowerCase());
+    ok('role: closed notice hidden while listed', await page.locator('#role-closed').isHidden());
+    ok('role: back link + nav go to careers home', await page.evaluate(() => document.querySelector('.back').getAttribute('href') === '../index.html#roles' && document.querySelector('.logo').getAttribute('href') === '../index.html'));
+    ok('role: sidebar sticky with 5 hiring steps incl. 3a', await page.evaluate(() => getComputedStyle(document.querySelector('.role-aside')).position === 'sticky' && document.querySelectorAll('.aside-steps li').length === 5 && document.querySelector('.aside-steps li.opt') !== null));
+    ok('role: Poppins loaded on role page', await page.evaluate(() => document.fonts.check('800 16px Poppins')));
+    ok('role: no console/page errors', errs.length === 0 && consoleErr.length === 0, [...errs, ...consoleErr].join(' | '));
+    ok('role: no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    ok('role: JSON-LD JobPosting present', await page.evaluate(() => { try { const d = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent); return d['@type'] === 'JobPosting' && d.directApply === true && /\/application/.test(d.url); } catch (e) { return false; } }));
+    await page.screenshot({ path: path.join(OUT, 'role-desktop.png') });
+    await page.locator('.role-cta').scrollIntoViewIfNeeded(); await page.screenshot({ path: path.join(OUT, 'role-desktop-bottom.png') });
+    // closed-role path: API says the job is gone
+    const p2 = await ctx.newPage();
+    await p2.route('**/api.ashbyhq.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ jobs: [] }) }));
+    await p2.goto(ORIGIN + '/' + meta.page); await p2.waitForTimeout(500);
+    ok('role: closed notice shown + apply disabled when Ashby no longer lists it', await p2.evaluate(() => !document.getElementById('role-closed').hidden && [...document.querySelectorAll('[data-apply]')].every(a => a.getAttribute('aria-disabled') === 'true' && !a.hasAttribute('href'))));
+    await ctx.close();
+    // mobile
+    const m = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    const mp = await m.newPage(); await mp.goto(ORIGIN + '/' + meta.page); await mp.waitForTimeout(400);
+    ok('role mobile: no horizontal overflow', await mp.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    ok('role mobile: single column, aside below JD', await mp.evaluate(() => getComputedStyle(document.querySelector('.role-grid')).gridTemplateColumns.split(' ').length === 1 && document.querySelector('.role-aside').getBoundingClientRect().top > document.querySelector('#jd').getBoundingClientRect().top));
+    await mp.screenshot({ path: path.join(OUT, 'role-mobile.png') });
+    await m.close();
+  }
+
   // ---------- 3. API down ----------
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -223,6 +284,7 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
   }
 
   await browser.close();
+  server.close();
   console.log(JSON.stringify(report, null, 2));
   console.log(`\n${report.pass.length} passed, ${report.fail.length} failed`);
   process.exit(report.fail.length ? 1 : 0);
