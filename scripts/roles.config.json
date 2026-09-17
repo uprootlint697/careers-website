@@ -1,7 +1,16 @@
 {
-  "_comment": "Per-role overrides for the careers site. Match by Ashby job id or exact title (case-insensitive).",
+  "_comment": "Per-role overrides for the careers site. Match by Ashby job id or exact title (case-insensitive). compensation.text is shown in At a glance; min/max/currency/unit feed JobPosting JSON-LD baseSalary.",
   "trialProject": [
     "Finance Manager (CPA Required)",
     "Supply Chain Manager"
-  ]
+  ],
+  "compensation": {
+    "Finance Manager (CPA Required)": {
+      "text": "$130–150k base + 20% performance-based bonus",
+      "min": 130000,
+      "max": 150000,
+      "currency": "USD",
+      "unit": "YEAR"
+    }
+  }
 }

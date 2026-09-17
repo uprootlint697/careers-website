@@ -263,6 +263,14 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
       const facts = [...document.querySelectorAll('.facts dt')].map(d => d.textContent.trim());
       return !document.querySelector('.trial-pill') && opt && /5–10 hrs/.test(opt.textContent) && document.querySelectorAll('.aside-steps li').length === 5 && facts.includes('Trial project');
     }));
+    const fin = Object.values(pagesJson.jobs).find(v => v.title === 'Finance Manager (CPA Required)');
+    if (fin) {
+      await tp.goto(ORIGIN + '/' + fin.page); await tp.waitForTimeout(300);
+      const comp = await tp.evaluate(() => { const dt = [...document.querySelectorAll('.facts dt')].find(d => d.textContent.trim() === 'Compensation'); return dt ? dt.nextElementSibling.textContent.trim() : null; });
+      ok('comp: Finance Manager shows compensation in At a glance', comp === '$130–150k base + 20% performance-based bonus', comp);
+      ok('comp: JobPosting JSON-LD carries baseSalary 130k–150k USD/YEAR', await tp.evaluate(() => { try { const d = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent); return d.baseSalary.value.minValue === 130000 && d.baseSalary.value.maxValue === 150000 && d.baseSalary.currency === 'USD' && d.baseSalary.value.unitText === 'YEAR'; } catch (e) { return false; } }));
+    }
+    ok('comp: non-configured role has no Compensation row', await page.evaluate(() => ![...document.querySelectorAll('.facts dt')].some(d => d.textContent.trim() === 'Compensation')));
     await tp.screenshot({ path: path.join(OUT, 'role-trial-desktop.png') });
     await tp.close();
     await page.screenshot({ path: path.join(OUT, 'role-desktop.png') });
@@ -280,7 +288,8 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const m = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     const mp = await m.newPage(); await mp.goto(ORIGIN + '/' + meta.page); await mp.waitForTimeout(400);
     ok('role mobile: no horizontal overflow', await mp.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-    ok('role mobile: single column, aside below JD', await mp.evaluate(() => getComputedStyle(document.querySelector('.role-grid')).gridTemplateColumns.split(' ').length === 1 && document.querySelector('.role-aside').getBoundingClientRect().top > document.querySelector('#jd').getBoundingClientRect().top));
+    ok('role mobile: single column; At a glance ABOVE the JD, How we hire below it', await mp.evaluate(() => { const g = document.querySelector('.role-grid'); const glance = document.querySelector('.role-aside > .aside-card:first-child').getBoundingClientRect(); const jd = document.querySelector('#jd').getBoundingClientRect(); const steps = document.querySelector('.aside-steps').getBoundingClientRect(); return getComputedStyle(g).gridTemplateColumns.split(' ').length === 1 && glance.bottom <= jd.top && steps.top >= jd.bottom - 1; }));
+    ok('role mobile: At a glance is visible near the top (within ~1.5 screens)', await mp.evaluate(() => document.querySelector('.role-aside > .aside-card:first-child').getBoundingClientRect().top < innerHeight * 1.5));
     await mp.screenshot({ path: path.join(OUT, 'role-mobile.png') });
     await m.close();
   }

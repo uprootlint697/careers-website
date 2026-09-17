@@ -20,6 +20,7 @@ const SITE = 'https://careers.uprootclean.com';
 const CONFIG = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'roles.config.json'), 'utf8'));
 const norm = s => String(s || '').trim().toLowerCase();
 const hasTrial = j => (CONFIG.trialProject || []).some(k => norm(k) === norm(j.id) || norm(k) === norm(j.title));
+const compOf = j => { const m = CONFIG.compensation || {}; const k = Object.keys(m).find(k => norm(k) === norm(j.id) || norm(k) === norm(j.title)); return k ? m[k] : null; };
 
 const index = readFileSync(resolve(ROOT, 'index.html'), 'utf8');
 const style = index.match(/<style>[\s\S]*?<\/style>/)[0];
@@ -61,6 +62,7 @@ const page = (j) => {
   const desc = (j.descriptionPlain || '').replace(/\s+/g, ' ').trim().slice(0, 155).replace(/\s\S*$/, '') + '…';
   const jd = cleanJd(j.descriptionHtml || '', j.title);
   const trial = hasTrial(j);
+  const comp = compOf(j);
   const ld = {
     '@context': 'https://schema.org', '@type': 'JobPosting',
     title: j.title.trim(), description: j.descriptionPlain || '', datePosted: j.publishedAt,
@@ -69,6 +71,7 @@ const page = (j) => {
     jobLocationType: j.isRemote ? 'TELECOMMUTE' : undefined,
     applicantLocationRequirements: j.location ? { '@type': 'Country', name: j.location } : undefined,
     directApply: true, url: apply,
+    baseSalary: comp && comp.min ? { '@type': 'MonetaryAmount', currency: comp.currency || 'USD', value: { '@type': 'QuantitativeValue', minValue: comp.min, maxValue: comp.max || comp.min, unitText: comp.unit || 'YEAR' } } : undefined,
   };
   return `<!DOCTYPE html>
 <html lang="en">
@@ -141,6 +144,7 @@ ${jd}
               ${team ? `<dt>Team</dt><dd>${esc(team)}</dd>` : ''}
               <dt>Location</dt><dd>${esc(j.isRemote ? `Remote · ${j.location || ''}`.replace(/ · $/, '') : (j.location || ''))}</dd>
               ${type ? `<dt>Type</dt><dd>${esc(type)}</dd>` : ''}
+              ${comp ? `<dt>Compensation</dt><dd class="comp">${esc(comp.text)}</dd>` : ''}
               ${posted ? `<dt>Posted</dt><dd>${esc(posted)}</dd>` : ''}
               ${trial ? `<dt>Trial project</dt><dd>Paid · 5–10 hrs</dd>` : ''}
             </dl>
