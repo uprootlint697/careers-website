@@ -13,7 +13,9 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream', 'cache-control': 'no-store' }); fs.createReadStream(p).pipe(res);
 });
 const PORT = 4173 + Math.floor(Math.random() * 500);
-const ORIGIN = `http://127.0.0.1:${PORT}`;
+// QA_ORIGIN=https://careers.uprootclean.com npm run qa  -> test the deployed site instead of the local copy
+const REMOTE = process.env.QA_ORIGIN ? process.env.QA_ORIGIN.replace(/\/$/, '') : '';
+const ORIGIN = REMOTE || `http://127.0.0.1:${PORT}`;
 const PAGE = ORIGIN + '/index.html';
 const OUT = path.join(__dirname, 'screenshots');
 require('fs').mkdirSync(OUT, { recursive: true });
@@ -21,7 +23,8 @@ const report = { pass: [], fail: [] };
 const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name + (detail ? ` — ${detail}` : ''));
 
 (async () => {
-  await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  if (!REMOTE) await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  console.error('QA against', ORIGIN);
   const browser = await chromium.launch();
 
   // ---------- 1. Desktop, live API ----------
@@ -301,7 +304,7 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
   }
 
   await browser.close();
-  server.close();
+  if (!REMOTE) server.close();
   console.log(JSON.stringify(report, null, 2));
   console.log(`\n${report.pass.length} passed, ${report.fail.length} failed`);
   process.exit(report.fail.length ? 1 : 0);

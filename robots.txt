@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://careers.uprootclean.com/sitemap.xml

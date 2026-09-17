@@ -15,6 +15,7 @@ const API = `https://api.ashbyhq.com/posting-api/job-board/${BOARD}`;
 const BOARD_URL = `https://jobs.ashbyhq.com/${BOARD}`;
 const UTM = 'utm_source=uprootclean.com&utm_medium=careers-page';
 const OUT = resolve(ROOT, 'roles');
+const SITE = 'https://careers.uprootclean.com';
 
 const CONFIG = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'roles.config.json'), 'utf8'));
 const norm = s => String(s || '').trim().toLowerCase();
@@ -76,10 +77,12 @@ const page = (j) => {
 <title>${esc(j.title.trim())} — Careers at Uproot Clean</title>
 <meta name="description" content="${esc(desc)}" />
 <meta name="robots" content="index, follow" />
+<link rel="canonical" href="${SITE}/roles/${slug}.html" />
 <meta name="theme-color" content="#004651" />
 ${favicon}
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Uproot Clean" />
+<meta property="og:url" content="${SITE}/roles/${slug}.html" />
 <meta property="og:title" content="${esc(j.title.trim())} — Careers at Uproot Clean" />
 <meta property="og:description" content="${esc(desc)}" />
 <meta property="og:image" content="https://uprootclean.com/cdn/shop/files/cleaner-ecom-Max-Quality.jpg?crop=center&height=630&v=1642553668&width=1200" />
@@ -255,4 +258,8 @@ for (const j of listed) {
 }
 for (const f of readdirSync(OUT)) if (!keep.has(f)) { unlinkSync(resolve(OUT, f)); console.log(`✗ removed stale roles/${f}`); }
 writeFileSync(resolve(OUT, 'index.json'), JSON.stringify({ builtAt: new Date().toISOString(), board: BOARD_URL, jobs: map }, null, 2));
+const today = new Date().toISOString().slice(0, 10);
+const urls = [`${SITE}/`, ...Object.values(map).map(m => `${SITE}/${m.page}`)];
+writeFileSync(resolve(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}\n</urlset>\n`);
+console.log(`sitemap.xml: ${urls.length} urls`);
 console.log(`\n${listed.length} role pages, roles/index.json written`);
