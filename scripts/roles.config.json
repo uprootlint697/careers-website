@@ -1,0 +1,7 @@
+{
+  "_comment": "Per-role overrides for the careers site. Match by Ashby job id or exact title (case-insensitive).",
+  "trialProject": [
+    "Finance Manager (CPA Required)",
+    "Supply Chain Manager"
+  ]
+}

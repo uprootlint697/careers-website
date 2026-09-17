@@ -432,6 +432,9 @@
   .role-hero .back { display: inline-flex; align-items: center; gap: .4rem; font-size: .86rem; font-weight: 700; color: var(--uproot-deep); text-decoration: none; margin-bottom: 1.1rem; }
   .role-hero .back:hover { text-decoration: underline; }
   .role-meta { margin-bottom: 1.35rem; }
+  .trial-pill { display: inline-flex; align-items: center; gap: .5rem; margin: -.4rem 0 1.35rem; padding: .5rem .85rem; border-radius: 999px; background: var(--butter); border: 1px dashed rgba(0, 70, 81, .35); color: var(--uproot-deep); font-size: .86rem; font-weight: 600; }
+  .trial-pill b { font-weight: 800; }
+  .tag-trial { background: var(--butter); border: 1px dashed rgba(0, 70, 81, .35); }
   .role-closed { margin: 1rem 0 0; padding: .7rem 1rem; border-radius: 12px; background: var(--butter); color: var(--uproot-deep); font-weight: 600; font-size: .92rem; }
   .role-closed a { color: var(--uproot-deep); }
   .btn-lg { padding: .95rem 1.6rem; font-size: 1rem; }
@@ -955,7 +958,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <li class="step step-opt">
             <div class="step-top"><div class="n">3a</div><span class="glyph" aria-hidden="true">🛠️</span></div>
             <h3>Paid Trial Project</h3>
-            <p>A short paid project on a real problem, so we both see how you work. For specific roles only, not every hire.</p>
+            <p>A short paid project on a real problem, so we both see how you work. <span id="trial-roles">For specific roles only, not every hire.</span></p>
             <span class="opt-tag">Select roles only</span>
             <span class="pill"><span aria-hidden="true">⏱</span> 5–10 hrs · paid</span>
           </li>
@@ -1187,9 +1190,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         if (local) { a.href = local.page; }
         else { a.href = withUtm(j.applyUrl || (j.jobUrl + '/application')); a.target = '_blank'; a.rel = 'noopener'; }
         a.setAttribute('data-dept', dept);
+        var trialTag = local && local.trial ? ' <span class="tag tag-trial">Paid trial project</span>' : '';
         a.innerHTML =
           '<div><h3>' + esc((j.title || '').trim()) + '</h3>' +
-          '<div class="meta"><span class="tag tag-' + di + '">' + esc(dept) + '</span> ' + esc(bits.join(' · ')) + '</div></div>' +
+          '<div class="meta"><span class="tag tag-' + di + '">' + esc(dept) + '</span> ' + esc(bits.join(' · ')) + trialTag + '</div></div>' +
           '<span class="go">View role <span class="arw" aria-hidden="true">→</span></span>';
         frag.appendChild(a);
       });
@@ -1229,7 +1233,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     if (!window.fetch) { fail(); return; }
     var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = ctrl && setTimeout(function () { ctrl.abort(); }, 9000);
-    var pages = location.protocol === 'file:' ? Promise.resolve() : fetch('roles/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) { PAGES = (m && m.jobs) || {}; }).catch(function () {});
+    var pages = location.protocol === 'file:' ? Promise.resolve() : fetch('roles/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+      PAGES = (m && m.jobs) || {};
+      // name the roles that currently include the paid trial project (step 3a)
+      var names = Object.keys(PAGES).filter(function (k) { return PAGES[k].trial; }).map(function (k) { return PAGES[k].title; }).sort();
+      var el = document.getElementById('trial-roles');
+      if (el && names.length) {
+        var last = names.pop(); var joined = names.length ? names.join(', ') + ' and ' + last : last;
+        el.textContent = 'Currently required for ' + joined + '.';
+      }
+    }).catch(function () {});
     Promise.all([fetch(API, { signal: ctrl ? ctrl.signal : undefined }), pages])
       .then(function (rs) { var r = rs[0]; if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (d) { render(Array.isArray(d.jobs) ? d.jobs : []); })

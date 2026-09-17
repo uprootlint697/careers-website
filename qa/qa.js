@@ -134,6 +134,10 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('roles: index.json covers every role in the live list', hrefs.every(h => Object.values(pagesJson.jobs).some(j => h.href.endsWith(j.page))), `${Object.keys(pagesJson.jobs).length} pages`);
     for (const j of Object.values(pagesJson.jobs)) if (!require('fs').existsSync(path.resolve(__dirname, '..', j.page))) report.fail.push('roles: missing file ' + j.page);
 
+    // homepage: trial roles are tagged in the list and named in the 3a card
+    const tagged = await page.$$eval('.role', as => as.filter(a => a.querySelector('.tag-trial')).map(a => a.querySelector('h3').textContent.trim()).sort());
+    ok('trial: homepage list tags the two trial roles', tagged.join('|') === 'Finance Manager (CPA Required)|Supply Chain Manager', tagged.join('|'));
+    ok('trial: 3a card names them', (await page.locator('#trial-roles').innerText()) === 'Currently required for Finance Manager (CPA Required) and Supply Chain Manager.', await page.locator('#trial-roles').innerText());
     // in-page anchors resolve
     const anchors = await page.$$eval('a[href^="#"]', as => [...new Set(as.map(a => a.getAttribute('href')))]);
     const missing = [];
@@ -214,11 +218,24 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('role: first JD heading is not a duplicate of the title', (await page.evaluate(() => { const h = document.querySelector('#jd h3'); return h ? h.textContent.trim().toLowerCase() : ''; })) !== meta.title.toLowerCase());
     ok('role: closed notice hidden while listed', await page.locator('#role-closed').isHidden());
     ok('role: back link + nav go to careers home', await page.evaluate(() => document.querySelector('.back').getAttribute('href') === '../index.html#roles' && document.querySelector('.logo').getAttribute('href') === '../index.html'));
-    ok('role: sidebar sticky with 5 hiring steps incl. 3a', await page.evaluate(() => getComputedStyle(document.querySelector('.role-aside')).position === 'sticky' && document.querySelectorAll('.aside-steps li').length === 5 && document.querySelector('.aside-steps li.opt') !== null));
+    ok('role: sidebar sticky; non-trial role shows the 4 core steps', await page.evaluate(() => getComputedStyle(document.querySelector('.role-aside')).position === 'sticky' && document.querySelectorAll('.aside-steps li').length === 4));
     ok('role: Poppins loaded on role page', await page.evaluate(() => document.fonts.check('800 16px Poppins')));
     ok('role: no console/page errors', errs.length === 0 && consoleErr.length === 0, [...errs, ...consoleErr].join(' | '));
     ok('role: no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     ok('role: JSON-LD JobPosting present', await page.evaluate(() => { try { const d = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent); return d['@type'] === 'JobPosting' && d.directApply === true && /\/application/.test(d.url); } catch (e) { return false; } }));
+    // trial-project roles (scripts/roles.config.json) vs the rest
+    const trialIds = Object.entries(pagesJson.jobs).filter(([, v]) => v.trial).map(([k, v]) => v);
+    ok('trial: config marks exactly Finance Manager + Supply Chain Manager', trialIds.map(v => v.title).sort().join('|') === 'Finance Manager (CPA Required)|Supply Chain Manager', trialIds.map(v => v.title).join('|'));
+    ok('trial: this page (no trial) hides step 3a and the pill', await page.evaluate(() => !document.querySelector('.aside-steps li.opt') && !document.querySelector('.trial-pill') && document.querySelectorAll('.aside-steps li').length === 4));
+    const tp = await ctx.newPage();
+    await tp.goto(ORIGIN + '/' + trialIds[0].page); await tp.waitForTimeout(300);
+    ok('trial: Finance/Supply page shows pill, 3a step (5 steps) and At-a-glance row', await tp.evaluate(() => {
+      const pill = document.querySelector('.trial-pill'); const opt = document.querySelector('.aside-steps li.opt');
+      const facts = [...document.querySelectorAll('.facts dt')].map(d => d.textContent.trim());
+      return pill && /paid trial project/.test(pill.textContent) && opt && /5–10 hrs/.test(opt.textContent) && document.querySelectorAll('.aside-steps li').length === 5 && facts.includes('Trial project');
+    }));
+    await tp.screenshot({ path: path.join(OUT, 'role-trial-desktop.png') });
+    await tp.close();
     await page.screenshot({ path: path.join(OUT, 'role-desktop.png') });
     await page.locator('.role-cta').scrollIntoViewIfNeeded(); await page.screenshot({ path: path.join(OUT, 'role-desktop-bottom.png') });
     // closed-role path: API says the job is gone

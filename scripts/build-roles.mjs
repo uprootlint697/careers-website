@@ -16,6 +16,10 @@ const BOARD_URL = `https://jobs.ashbyhq.com/${BOARD}`;
 const UTM = 'utm_source=uprootclean.com&utm_medium=careers-page';
 const OUT = resolve(ROOT, 'roles');
 
+const CONFIG = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'roles.config.json'), 'utf8'));
+const norm = s => String(s || '').trim().toLowerCase();
+const hasTrial = j => (CONFIG.trialProject || []).some(k => norm(k) === norm(j.id) || norm(k) === norm(j.title));
+
 const index = readFileSync(resolve(ROOT, 'index.html'), 'utf8');
 const style = index.match(/<style>[\s\S]*?<\/style>/)[0];
 const favicon = index.match(/<link rel="icon"[^>]*>/)[0];
@@ -54,6 +58,7 @@ const page = (j) => {
   const posted = j.publishedAt ? fmtDate(j.publishedAt) : '';
   const desc = (j.descriptionPlain || '').replace(/\s+/g, ' ').trim().slice(0, 155).replace(/\s\S*$/, '') + '…';
   const jd = cleanJd(j.descriptionHtml || '', j.title);
+  const trial = hasTrial(j);
   const ld = {
     '@context': 'https://schema.org', '@type': 'JobPosting',
     title: j.title.trim(), description: j.descriptionPlain || '', datePosted: j.publishedAt,
@@ -111,6 +116,7 @@ ${style}
         <p class="section-kicker">${esc(dept)}${team ? ` · ${esc(team)}` : ''}</p>
         <h1 id="role-title">${esc(j.title.trim())}</h1>
         <p class="meta-row role-meta">${bits.map(esc).join(' · ')}${posted ? ` · Posted ${esc(posted)}` : ''}</p>
+        ${trial ? `<p class="trial-pill"><span aria-hidden="true">🛠️</span> This role includes a <b>paid trial project</b> (5–10 hrs) after the team manager interview.</p>` : ''}
         <div class="hero-cta">
           <a class="btn btn-primary btn-lg" href="${apply}" target="_blank" rel="noopener" data-apply>Apply now <span class="arw" aria-hidden="true">→</span></a>
           <a class="btn btn-ghost" href="../index.html#fit">Not sure? Check the fit</a>
@@ -133,6 +139,7 @@ ${jd}
               <dt>Location</dt><dd>${esc(j.isRemote ? `Remote · ${j.location || ''}`.replace(/ · $/, '') : (j.location || ''))}</dd>
               ${type ? `<dt>Type</dt><dd>${esc(type)}</dd>` : ''}
               ${posted ? `<dt>Posted</dt><dd>${esc(posted)}</dd>` : ''}
+              ${trial ? `<dt>Trial project</dt><dd>Paid · 5–10 hrs</dd>` : ''}
             </dl>
             <a class="btn btn-primary btn-block" href="${apply}" target="_blank" rel="noopener" data-apply>Apply now <span class="arw" aria-hidden="true">→</span></a>
             <p class="fine-print">Applications go through Ashby, our hiring platform. Takes about five minutes.</p>
@@ -143,7 +150,7 @@ ${jd}
               <li>Screening call <span>15 min</span></li>
               <li>Portfolio showcase <span>5 min</span></li>
               <li>Team manager interview <span>45 min</span></li>
-              <li class="opt">Paid trial project <span>select roles</span></li>
+              ${trial ? `<li class="opt">Paid trial project <span>5–10 hrs · paid</span></li>` : ''}
               <li>Executive interview <span>45 min</span></li>
             </ol>
             <a class="more" href="../index.html#hire">The full process →</a>
@@ -242,9 +249,9 @@ for (const j of listed) {
   const hash = String((j.descriptionHtml || '').length) + ':' + (j.descriptionHtml || '').slice(0, 64);
   html = html.replace('<article class="jd" id="jd">', `<article class="jd" id="jd" data-hash="${esc(hash)}">`);
   writeFileSync(resolve(OUT, file), html);
-  map[j.id] = { page: `roles/${file}`, title: j.title.trim(), apply: withUtm(j.applyUrl || `${j.jobUrl}/application`) };
+  map[j.id] = { page: `roles/${file}`, title: j.title.trim(), apply: withUtm(j.applyUrl || `${j.jobUrl}/application`), trial: hasTrial(j) };
   keep.add(file);
-  console.log(`✓ roles/${file}  (${(j.descriptionHtml || '').length} chars)`);
+  console.log(`✓ roles/${file}  (${(j.descriptionHtml || '').length} chars)${hasTrial(j) ? '  · trial project' : ''}`);
 }
 for (const f of readdirSync(OUT)) if (!keep.has(f)) { unlinkSync(resolve(OUT, f)); console.log(`✗ removed stale roles/${f}`); }
 writeFileSync(resolve(OUT, 'index.json'), JSON.stringify({ builtAt: new Date().toISOString(), board: BOARD_URL, jobs: map }, null, 2));

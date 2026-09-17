@@ -1,61 +1,72 @@
 {
-  "builtAt": "2026-09-17T13:11:18.742Z",
+  "builtAt": "2026-09-17T13:59:47.588Z",
   "board": "https://jobs.ashbyhq.com/uprootclean",
   "jobs": {
     "34bf293d-bde4-4bbf-82d3-40da9e6bf4d5": {
       "page": "roles/direct-response-creative-strategist.html",
       "title": "Direct Response Creative Strategist",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/34bf293d-bde4-4bbf-82d3-40da9e6bf4d5/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/34bf293d-bde4-4bbf-82d3-40da9e6bf4d5/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "0ed6fef2-c7a4-4609-bdce-4af084efab4b": {
       "page": "roles/data-automation-analyst.html",
       "title": "Data Automation Analyst",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/0ed6fef2-c7a4-4609-bdce-4af084efab4b/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/0ed6fef2-c7a4-4609-bdce-4af084efab4b/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "457064fe-2b9f-4677-9e2e-dc62eebf9d3a": {
       "page": "roles/talent-acquisition-partner-active-sourcing.html",
       "title": "Talent Acquisition Partner (Active Sourcing)",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/457064fe-2b9f-4677-9e2e-dc62eebf9d3a/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/457064fe-2b9f-4677-9e2e-dc62eebf9d3a/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "179b484d-23c9-484e-bc2c-460974b4075b": {
       "page": "roles/operations-specialist.html",
       "title": "Operations Specialist",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/179b484d-23c9-484e-bc2c-460974b4075b/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/179b484d-23c9-484e-bc2c-460974b4075b/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "94e36df6-bf08-4948-9fac-2c7b3dc88270": {
       "page": "roles/customer-service-representative.html",
       "title": "Customer Service Representative",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/94e36df6-bf08-4948-9fac-2c7b3dc88270/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/94e36df6-bf08-4948-9fac-2c7b3dc88270/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "4bc82218-4e89-40d7-9377-92123ce60766": {
       "page": "roles/sr-paid-media-buyer.html",
       "title": "Sr Paid Media Buyer",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/4bc82218-4e89-40d7-9377-92123ce60766/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/4bc82218-4e89-40d7-9377-92123ce60766/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "7198fa73-b092-46e9-8d57-6339451e4b64": {
       "page": "roles/performance-video-editor.html",
       "title": "Performance Video Editor",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/7198fa73-b092-46e9-8d57-6339451e4b64/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/7198fa73-b092-46e9-8d57-6339451e4b64/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "36fd9433-0b02-4751-8e45-bfac72b8c220": {
       "page": "roles/finance-manager-cpa-required.html",
       "title": "Finance Manager (CPA Required)",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/36fd9433-0b02-4751-8e45-bfac72b8c220/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/36fd9433-0b02-4751-8e45-bfac72b8c220/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": true
     },
     "0cf61961-d20c-4ccd-995f-2e8795cda0e1": {
       "page": "roles/supply-chain-manager.html",
       "title": "Supply Chain Manager",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/0cf61961-d20c-4ccd-995f-2e8795cda0e1/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/0cf61961-d20c-4ccd-995f-2e8795cda0e1/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": true
     },
     "8622ca15-fd52-4078-86d6-a95ae4e35787": {
       "page": "roles/jr-paid-social-marketing-specialist.html",
       "title": "Jr. Paid Social Marketing Specialist",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/8622ca15-fd52-4078-86d6-a95ae4e35787/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/8622ca15-fd52-4078-86d6-a95ae4e35787/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     },
     "989b671c-b8c5-447f-a6ad-4f3c0318b3d2": {
       "page": "roles/tiktok-shop-affiliate-specialist.html",
       "title": "TikTok Shop Affiliate Specialist",
-      "apply": "https://jobs.ashbyhq.com/uprootclean/989b671c-b8c5-447f-a6ad-4f3c0318b3d2/application?utm_source=uprootclean.com&utm_medium=careers-page"
+      "apply": "https://jobs.ashbyhq.com/uprootclean/989b671c-b8c5-447f-a6ad-4f3c0318b3d2/application?utm_source=uprootclean.com&utm_medium=careers-page",
+      "trial": false
     }
   }
 }

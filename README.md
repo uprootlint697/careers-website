@@ -49,7 +49,15 @@ Keeping it fresh, two layers:
    API (sanitised client-side); if the role is no longer listed it shows "This role has closed"
    and disables the Apply buttons.
 
-Run `npm run build:roles` whenever roles are added or edited in Ashby (or on a schedule).
+**Per-role overrides** live in `scripts/roles.config.json`. `trialProject` lists the roles (by exact
+title or Ashby job id) that include the paid trial project (step 3a). For those roles the page shows a
+"paid trial project" pill under the title, a *Trial project* row in At a glance, and 3a in the
+sidebar steps; other roles show a 4-step sidebar with no 3a. The homepage tags them "Paid trial
+project" in the list and names them in the 3a card. Currently: Finance Manager (CPA Required),
+Supply Chain Manager.
+
+Run `npm run build:roles` whenever roles are added or edited in Ashby, or the config changes (or on
+a schedule).
 
 Fallbacks on the homepage, all tested:
 
@@ -65,7 +73,7 @@ To point at a different board, change `BOARD` at the top of the script.
 ## Sections
 
 Hero (2-photo carousel + caption + live open-roles badge) · The company · Why join · Benefits · How we hire
-(4 steps + optional paid trial project 3a, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
+(4 steps + paid trial project 3a for Finance Manager and Supply Chain Manager, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
 
 ## Hero photo carousel
 
