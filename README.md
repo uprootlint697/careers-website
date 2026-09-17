@@ -37,8 +37,29 @@ To point at a different board, change `BOARD` at the top of the script.
 
 ## Sections
 
-Hero (with at-a-glance panel) · The company · Why join · Benefits · How we hire (4 steps,
-1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
+Hero (team photo + live open-roles badge) · The company · Why join · Benefits · How we hire
+(4 steps, 1–2 weeks) · Fit check · Open roles (live) · Stay in the loop (LinkedIn + job board) · Footer.
+
+## Swapping in the team photo
+
+The hero's right column is a `.hero-photo` slot holding a brand-gradient **placeholder** (an inline
+SVG data URI) until the real team image exists. To replace it:
+
+1. Export the photo as **4:5 portrait, ≥1400 px wide** (1400×1750 is the slot's intrinsic size).
+2. In `index.html`, find the `<!-- Team photo: swap src ... -->` comment and change the `<img>`'s
+   `src` to the image URL. Keep `width="1400" height="1750"` so layout doesn't shift while loading.
+3. Set a real `alt` (e.g. `alt="The Uproot Clean team on a video call"`). It's `alt=""` now because
+   the placeholder is decorative.
+
+The "Open roles right now" badge overlays the bottom of the photo and keeps working unchanged.
+
+## Retailer logos
+
+"Where we sell" shows Amazon, Walmart, Target and Petco as **inline SVG wordmarks** (official
+vector logos from Wikimedia Commons, cleaned: no `<style>` blocks, no stray ids, `viewBox` set,
+`role="img"` + `aria-label` on each). They are used nominatively to state where the products are
+sold; each mark is its owner's trademark. Sizing is per-logo (`.logo-amazon`, `.logo-walmart`,
+`.logo-target`, `.logo-petco`) so the optical weights match at ~24–30 px tall.
 
 ## Hosting notes
 
@@ -62,6 +83,16 @@ strike before go-live:
 
 ## QA
 
-Verified with Playwright (Chromium) on 2026-09-17 — desktop 1280 and mobile 375: live API
-render, filters, link integrity, in-page anchors, skip link, no console errors, no horizontal
-overflow, API-down / API-empty / XSS paths. See the commit message for the run summary.
+```bash
+npm i && npm run qa
+```
+
+Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already cached on this
+machine; `^` ranges drift to newer Playwright releases that demand a browser download).
+Screenshots land in `qa/screenshots/` (git-ignored).
+
+Checks (40): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
+link, Poppins loaded, no console errors, no horizontal overflow, hero photo slot decodes and is 4:5,
+badge sits inside the photo, 4 labelled retailer logos with no leaked CSS, API-down / API-empty /
+hostile-title paths. Last run 2026-09-17: all green.

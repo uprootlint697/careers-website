@@ -39,9 +39,16 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('desktop: no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     ok('desktop: Poppins loaded', await page.evaluate(() => document.fonts.check('800 16px Poppins')));
     ok('desktop: nav links visible at 1280', await page.locator('.nav-links a').first().isVisible());
-    // hero panel is 2 cols at desktop
-    const cols = await page.evaluate(() => getComputedStyle(document.querySelector('.hero-panel')).gridTemplateColumns.split(' ').length);
-    ok('desktop: hero panel 2 columns', cols === 2, `${cols}`);
+    // hero team-photo slot + live badge
+    const img = await page.evaluate(() => { const i = document.querySelector('.hero-photo img'); return i && { w: i.naturalWidth, h: i.naturalHeight, complete: i.complete, ratio: +(i.getBoundingClientRect().width / i.getBoundingClientRect().height).toFixed(2) }; });
+    ok('hero: team image slot renders (placeholder decoded)', img && img.complete && img.w > 0, JSON.stringify(img));
+    ok('hero: image slot is 4:5', img && Math.abs(img.ratio - 0.8) < 0.03, `${img && img.ratio}`);
+    ok('hero: live badge sits inside photo', await page.evaluate(() => { const p = document.querySelector('.hero-photo').getBoundingClientRect(), b = document.querySelector('.hero-badge').getBoundingClientRect(); return b.left >= p.left && b.right <= p.right && b.bottom <= p.bottom; }));
+    // retailer logos
+    const logos = await page.$$eval('.retailer-bar .logo-svg', els => els.map(e => ({ name: e.getAttribute('aria-label'), w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })));
+    ok('retailers: 4 logo SVGs with labels', logos.length === 4 && logos.map(l => l.name).join() === 'Amazon,Walmart,Target,Petco', logos.map(l => l.name).join());
+    ok('retailers: logos have real size (Target bullseye is square)', logos.every(l => l.w >= 28 && l.h >= 20 && l.h <= 32), JSON.stringify(logos));
+    ok('retailers: no leaked svg class rules', await page.evaluate(() => !document.querySelector('.retailer-bar svg style')));
     const stepCols = await page.evaluate(() => getComputedStyle(document.querySelector('.steps')).gridTemplateColumns.split(' ').length);
     ok('desktop: interview steps 4 columns', stepCols === 4, `${stepCols}`);
 
@@ -74,8 +81,9 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const leaks = ['provisional', 'draft', 'placeholder', 'preview', 'not for ship', 'internal'].filter(w => text.toLowerCase().includes(w));
     ok('copy: no review language in rendered text', leaks.length === 0, leaks.join(','));
 
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(300);
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.activeElement && document.activeElement.blur(); document.scrollingElement.scrollTop = 0; window.scrollTo(0, 0); });
+    const atTop = await page.waitForFunction(() => window.scrollY === 0, null, { timeout: 3000 }).then(() => true).catch(() => false);
+    ok('screenshot prep: at top of page', atTop, await page.evaluate(() => `scrollY=${window.scrollY} hash=${location.hash} active=${document.activeElement && document.activeElement.tagName}`));
     await page.screenshot({ path: path.join(OUT, 'desktop-hero.png') });
     await page.locator('#culture').scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(OUT, 'desktop-company.png') });
@@ -100,6 +108,11 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('mobile: hero stacks to 1 column', cols === 1, `${cols}`);
     ok('mobile: nav CTA visible', await page.locator('.nav-inner > .btn').isVisible());
     await page.screenshot({ path: path.join(OUT, 'mobile-top.png') });
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    await page.locator('.hero-photo').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(OUT, 'mobile-hero-photo.png') });
+    await page.locator('.retailer-bar').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(OUT, 'mobile-retailers.png') });
     await page.locator('#roles').scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(OUT, 'mobile-roles.png') });
     await page.screenshot({ path: path.join(OUT, 'mobile-full.png'), fullPage: true });
