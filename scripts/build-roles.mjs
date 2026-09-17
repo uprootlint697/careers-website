@@ -29,7 +29,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const slugify = s => s.toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 const withUtm = u => u + (u.includes('?') ? '&' : '?') + UTM;
 const TYPES = { FullTime: 'Full-time', PartTime: 'Part-time', Intern: 'Internship', Contract: 'Contract', Temporary: 'Temporary' };
-const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }); // UTC so local and CI builds agree
 
 // Ashby descriptions use p/strong/h2/h3/ul/li/div/br/em/a with inline styles.
 // Keep the structure, drop the styling, promote "<p><strong>Heading</strong></p>" to h3.
