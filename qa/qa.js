@@ -31,9 +31,10 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await ctx.newPage();
-    const consoleErrors = [], failedReqs = [];
+    const consoleErrors = [], failedReqs = [], fbHits = [];
     page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()); });
     page.on('requestfailed', r => failedReqs.push(r.url()));
+    page.on('request', r => { if (/facebook\.com\/tr/.test(r.url())) fbHits.push(new URL(r.url())); });
     const apiResp = page.waitForResponse(r => r.url().includes('api.ashbyhq.com'), { timeout: 15000 }).catch(() => null);
     await page.goto(PAGE);
     const resp = await apiResp;
@@ -141,6 +142,14 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const tagged = await page.$$eval('.role', as => as.filter(a => a.querySelector('.tag-trial')).map(a => a.querySelector('h3').textContent.trim()).sort());
     ok('trial: homepage list tags the two trial roles', tagged.join('|') === 'Finance Manager (CPA Required)|Supply Chain Manager', tagged.join('|'));
     ok('trial: 3a card names them', (await page.locator('#trial-roles').innerText()) === 'Currently required for Finance Manager (CPA Required) and Supply Chain Manager.', await page.locator('#trial-roles').innerText());
+    // Meta Pixel: PageView on load
+    await page.waitForTimeout(800);
+    const pv = fbHits.filter(u => u.searchParams.get('ev') === 'PageView');
+    const pxState = await page.evaluate(() => { try { return { loaded: !!(window.fbq && fbq.loaded), ids: fbq.getState().pixels.map(x => x.id) }; } catch (e) { return { loaded: false, ids: [] }; } });
+    ok('pixel: fbevents loaded and pixel 789244916327189 initialised', pxState.loaded && pxState.ids.includes('789244916327189'), JSON.stringify(pxState));
+    if (REMOTE) ok('pixel: PageView hit reached facebook.com/tr (live domain)', pv.length >= 1 && pv.every(u => u.searchParams.get('id') === '789244916327189'), `${pv.length} hits — if 0, add this domain to the pixel's traffic permissions in Events Manager`);
+    else report.pass.push('pixel: PageView network hit skipped locally (Meta blocks 127.0.0.1 via traffic permissions)');
+    ok('pixel: no Lead without an Apply click', !fbHits.some(u => u.searchParams.get('ev') === 'Lead'));
     // in-page anchors resolve
     const anchors = await page.$$eval('a[href^="#"]', as => [...new Set(as.map(a => a.getAttribute('href')))]);
     const missing = [];
@@ -204,8 +213,9 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     const [jobId, meta] = Object.entries(pagesJson.jobs)[0];
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await ctx.newPage();
-    const errs = [], consoleErr = [];
+    const errs = [], consoleErr = [], fb = [];
     page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') consoleErr.push(m.text()); });
+    page.on('request', r => { if (/facebook\.com\/tr/.test(r.url())) fb.push(new URL(r.url())); });
     const apiResp = page.waitForResponse(r => r.url().includes('api.ashbyhq.com'), { timeout: 15000 }).catch(() => null);
     await page.goto(ORIGIN + '/' + meta.page);
     await apiResp; await page.waitForTimeout(400);
@@ -226,6 +236,22 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     ok('role: no console/page errors', errs.length === 0 && consoleErr.length === 0, [...errs, ...consoleErr].join(' | '));
     ok('role: no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     ok('role: JSON-LD JobPosting present', await page.evaluate(() => { try { const d = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent); return d['@type'] === 'JobPosting' && d.directApply === true && /\/application/.test(d.url); } catch (e) { return false; } }));
+    // Meta Pixel on role page: PageView on load, Lead on Apply click (new tab opens; main page keeps running)
+    await page.waitForTimeout(600);
+    ok('pixel: role page has fbq initialised', await page.evaluate(() => { try { return fbq.getState().pixels.some(x => x.id === '789244916327189'); } catch (e) { return false; } }));
+    // spy on fbq so the Lead call is provable even where Meta's traffic permissions block the network hit
+    await page.evaluate(() => { window.__fbCalls = []; const orig = window.fbq; const spy = function () { window.__fbCalls.push([].slice.call(arguments)); return orig.apply(this, arguments); }; Object.assign(spy, orig); window.fbq = spy; });
+    const popup = ctx.waitForEvent('page', { timeout: 5000 }).catch(() => null);
+    await page.click('.role-hero a[data-apply]');
+    const leadReq = REMOTE ? await page.waitForRequest(r => /facebook\.com\/tr/.test(r.url()) && new URL(r.url()).searchParams.get('ev') === 'Lead', { timeout: 5000 }).catch(() => null) : null;
+    await page.waitForTimeout(300);
+    const pop = await popup; if (pop) await pop.close().catch(() => {});
+    const calls = await page.evaluate(() => window.__fbCalls);
+    const leads = calls.filter(c => c[0] === 'track' && c[1] === 'Lead');
+    ok('pixel: one fbq(track, Lead) call per Apply click, with job name/id', leads.length === 1 && leads[0][2] && leads[0][2].content_name === meta.title && leads[0][2].content_ids[0] === jobId && leads[0][2].content_type === 'job', JSON.stringify(leads));
+    if (REMOTE) { const lead = leadReq && new URL(leadReq.url()); ok('pixel: Lead hit reached facebook.com/tr (live domain)', !!lead && lead.searchParams.get('id') === '789244916327189' && lead.searchParams.get('cd[content_name]') === meta.title, lead ? 'ok' : 'no network hit — check traffic permissions for this domain'); }
+    else report.pass.push('pixel: Lead network hit skipped locally (Meta blocks 127.0.0.1)');
+    ok('pixel: all 4 Apply buttons are tracked', (await page.locator('a[data-apply]').count()) === 4);
     // trial-project roles (scripts/roles.config.json) vs the rest
     const trialIds = Object.entries(pagesJson.jobs).filter(([, v]) => v.trial).map(([k, v]) => v);
     ok('trial: config marks exactly Finance Manager + Supply Chain Manager', trialIds.map(v => v.title).sort().join('|') === 'Finance Manager (CPA Required)|Supply Chain Manager', trialIds.map(v => v.title).join('|'));
@@ -246,6 +272,9 @@ const ok = (name, cond, detail) => (cond ? report.pass : report.fail).push(name 
     await p2.route('**/api.ashbyhq.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ jobs: [] }) }));
     await p2.goto(ORIGIN + '/' + meta.page); await p2.waitForTimeout(500);
     ok('role: closed notice shown + apply disabled when Ashby no longer lists it', await p2.evaluate(() => !document.getElementById('role-closed').hidden && [...document.querySelectorAll('[data-apply]')].every(a => a.getAttribute('aria-disabled') === 'true' && !a.hasAttribute('href'))));
+    const fb2 = []; p2.on('request', r => { if (/facebook\.com\/tr/.test(r.url()) && new URL(r.url()).searchParams.get('ev') === 'Lead') fb2.push(1); });
+    await p2.click('.role-hero a[data-apply]', { force: true }).catch(() => {}); await p2.waitForTimeout(500);
+    ok('pixel: no Lead from a disabled Apply on a closed role', fb2.length === 0);
     await ctx.close();
     // mobile
     const m = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });

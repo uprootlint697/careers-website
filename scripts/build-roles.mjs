@@ -24,6 +24,7 @@ const hasTrial = j => (CONFIG.trialProject || []).some(k => norm(k) === norm(j.i
 const index = readFileSync(resolve(ROOT, 'index.html'), 'utf8');
 const style = index.match(/<style>[\s\S]*?<\/style>/)[0];
 const favicon = index.match(/<link rel="icon"[^>]*>/)[0];
+const pixel = index.match(/<!-- Meta Pixel Code -->[\s\S]*?<!-- End Meta Pixel Code -->\n/)[0];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const slugify = s => s.toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
@@ -87,11 +88,11 @@ ${favicon}
 <meta property="og:description" content="${esc(desc)}" />
 <meta property="og:image" content="https://uprootclean.com/cdn/shop/files/cleaner-ecom-Max-Quality.jpg?crop=center&height=630&v=1642553668&width=1200" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="preconnect" href="https://api.ashbyhq.com" crossorigin />
+${pixel}<link rel="preconnect" href="https://api.ashbyhq.com" crossorigin />
 <script type="application/ld+json">${JSON.stringify(ld)}</script>
 ${style}
 </head>
-<body data-job-id="${esc(j.id)}">
+<body data-job-id="${esc(j.id)}" data-job-title="${esc(j.title.trim())}" data-job-dept="${esc(dept)}">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <div class="banner">
@@ -108,7 +109,7 @@ ${style}
         <a href="../index.html#benefits">Benefits</a>
         <a href="../index.html#hire">How We Hire</a>
       </nav>
-      <a class="btn btn-primary" href="${apply}" target="_blank" rel="noopener">Apply now <span class="arw" aria-hidden="true">→</span></a>
+      <a class="btn btn-primary" href="${apply}" target="_blank" rel="noopener" data-apply>Apply now <span class="arw" aria-hidden="true">→</span></a>
     </div>
   </header>
 
@@ -191,6 +192,19 @@ ${jd}
   (function () {
     'use strict';
     document.getElementById('year').textContent = String(new Date().getFullYear());
+
+    // ---- Meta Pixel: Lead when someone clicks Apply now (links open in a new tab, so the hit isn't cut off) ----
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-apply]');
+      if (!a || !a.getAttribute('href') || a.getAttribute('aria-disabled') === 'true' || typeof window.fbq !== 'function') return;
+      var b = document.body;
+      window.fbq('track', 'Lead', {
+        content_name: a.getAttribute('data-job-title') || b.getAttribute('data-job-title') || document.title,
+        content_category: a.getAttribute('data-job-dept') || b.getAttribute('data-job-dept') || 'Careers',
+        content_ids: [a.getAttribute('data-job-id') || b.getAttribute('data-job-id') || ''],
+        content_type: 'job'
+      });
+    }, true);
     // Re-check Ashby: refresh the description if it changed, or mark the role closed.
     var id = document.body.getAttribute('data-job-id');
     if (!window.fetch || !id) return;

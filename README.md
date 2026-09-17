@@ -118,6 +118,30 @@ the Global Pet Expo and WPA (SuperZoo) exhibitor hubs and are not publicly downl
 have them, drop the PNGs into `assets/` and replace the corresponding `<svg class="badge">` with an
 `<img class="badge">` like the 2024 one.
 
+## Meta Pixel + Lead event
+
+The Meta Pixel (`789244916327189`) is in the `<head>` of `index.html` (between the icon links and the
+Ashby preconnect) and fires `PageView` on every page. The role-page builder copies the block from
+`index.html`, so there is exactly one place to edit it.
+
+**Lead:** a delegated click listener fires `fbq('track', 'Lead', {...})` when a visitor clicks any
+`a[data-apply]` — the four "Apply now" buttons on a role page (nav, hero, sidebar, bottom CTA) and,
+on the homepage, a role's direct-apply link when no local page exists yet. Payload:
+`content_name` = job title, `content_category` = department, `content_ids` = [Ashby job id],
+`content_type` = `job`. Apply links open in a new tab, so the hit is never cut off by navigation.
+Disabled Apply buttons on a closed role do not fire.
+
+**Traffic permissions:** this pixel has a domain allow-list in Events Manager (the browser console
+says *"unavailable on this website due to its traffic permission settings"* on any domain not
+listed). `careers.uprootclean.com` must be on that list or no events will record — Events Manager →
+Data sources → pixel → Settings → Traffic permissions. Local QA on `127.0.0.1` can never produce a
+network hit for the same reason.
+
+QA therefore checks two layers: locally it verifies `fbq` initialised with the right id and spies
+on `fbq()` to prove exactly one `track('Lead', {...})` call per Apply click with the right job
+name/id (and none on a closed role); against the live origin (`QA_ORIGIN=…`) it additionally
+requires the real `facebook.com/tr` PageView and Lead hits.
+
 ## Retailer logos
 
 "Where we sell" shows Amazon, Walmart, Target and Petco as **inline SVG wordmarks** (official
@@ -173,7 +197,7 @@ Playwright is pinned to **exactly 1.55.0** (matches the Chromium build already c
 machine; `^` ranges drift to newer Playwright releases that demand a browser download).
 Screenshots land in `qa/screenshots/` (git-ignored).
 
-Checks (69): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
+Checks (99): desktop 1280 + mobile 375, live Ashby render, hero count = list count, department
 filters, link integrity (Ashby URL + UTM + `target=_blank rel=noopener`), in-page anchors, skip
 link, Poppins loaded, no console errors, no horizontal overflow, carousel (both photos decode and
 are 4:5, frame is 4:5, next/prev/wrap/arrow-key/swipe all update the counter, WebP offered, track
